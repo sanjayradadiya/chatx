@@ -1,4 +1,4 @@
-import { LoginForm } from "@/module/auth/login-from";
+import LoginForm from "@/module/auth/login-from";
 
 
 const Login = () => {

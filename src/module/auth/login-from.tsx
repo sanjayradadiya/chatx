@@ -9,11 +9,21 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import useAuth from "./hooks/useAuth";
+import { useForm } from "react-hook-form"
+import { LoginFormInput } from "@/config/types";
 
-export function LoginForm({
+const LoginForm = ({
   className,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: React.ComponentPropsWithoutRef<"div">) => {
+  const { action } = useAuth();
+  const { signInWithEmail } = action;
+  const {
+    register,
+    handleSubmit,
+  } = useForm<LoginFormInput>();
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -24,7 +34,7 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
+          <form onSubmit={handleSubmit(signInWithEmail)}>
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
@@ -34,6 +44,7 @@ export function LoginForm({
                   placeholder="max@gamil.com"
                   required
                   autoComplete="off"
+                  {...register("email")}
                 />
               </div>
               <div className="grid gap-2">
@@ -52,6 +63,7 @@ export function LoginForm({
                   required
                   placeholder="password"
                   autoComplete="off"
+                  {...register("password")}
                 />
               </div>
               <Button type="submit" className="w-full">
@@ -73,3 +85,5 @@ export function LoginForm({
     </div>
   );
 }
+
+export default LoginForm
