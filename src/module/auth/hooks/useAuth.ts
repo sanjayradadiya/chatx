@@ -1,17 +1,61 @@
-import { LoginFormInput } from "@/config/types";
-import supaBaseClient from "@/services/supabase/client";
-import { useCallback } from "react";
+import { LoginFormInput, SignUpFormInput } from "@/config/types";
+import { useAuthProvider } from "@/context/auth-provider";
+import supabaseClient from "@/services/supabase/client";
+import { useCallback, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "sonner"
+
 
 const useAuth = () => {
+  const navigate = useNavigate()
+  const { session } = useAuthProvider()
+
+  // 👇 If already logged in, redirect to home
+  useEffect(() => {
+    if (session) {
+      navigate('/home');
+    }
+  }, [session, navigate]);
+
   const signInWithEmail = useCallback(async (loginData: LoginFormInput) => {
-    const { data, error } = await supaBaseClient.auth.signInWithPassword(loginData);
-    console.log("data ==>", data, error);
+    const { error } = await supabaseClient.auth.signInWithPassword(loginData);
+
+    if (error) {
+      toast(error.message, {
+        position: "top-center"
+      })
+    } else {
+      navigate('/home');
+    }
+  }, [navigate]);
+
+  const signUpNewUser = useCallback(async (signUpData: SignUpFormInput) => {
+    const { error } = await supabaseClient.auth.signUp({
+      email: signUpData.email,
+      password: signUpData.password,
+      options: {
+        data: {
+          'fullname': signUpData.fullname,
+        }
+      },
+    })
+
+    if (error) {
+      toast(error.message, {
+        position: 'top-center'
+      });
+    }
+
+    toast("Check your email for verification link", {
+      position: "top-center"
+    })
   }, []);
 
   return {
     state: {},
     action: {
       signInWithEmail,
+      signUpNewUser,
     },
   };
 };
