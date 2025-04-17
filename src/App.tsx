@@ -1,17 +1,22 @@
-import "./App.css";
-import { BrowserRouter } from "react-router";
+import { BrowserRouter } from 'react-router-dom';
 import RootNavigator from "./services/routing";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./context/auth-provider";
+import { ChatProvider } from "./context/chat-context";
+import { ThemeProvider } from "./context/theme-provider";
 
 function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <RootNavigator />
-        <Toaster />
-      </AuthProvider>
-    </BrowserRouter>
+    <ThemeProvider defaultTheme="system" storageKey="chatx-ui-theme">
+      <BrowserRouter>
+        <AuthProvider>
+          <ChatProvider>
+            <RootNavigator />
+            <Toaster />
+          </ChatProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

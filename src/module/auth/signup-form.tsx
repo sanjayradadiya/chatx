@@ -34,7 +34,7 @@ export function SignUpForm({
                 <Input
                   id="fullname"
                   type="text"
-                  placeholder="Sanjay Radadiya"
+                  placeholder="Chat User"
                   required
                   {...register("fullname")}
                 />
@@ -53,7 +53,7 @@ export function SignUpForm({
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                 </div>
-                <Input id="password" type="password" required {...register("password")} />
+                <Input id="password" type="password" placeholder="Password" required {...register("password")} />
               </div>
               <Button type="submit" className="w-full cursor-pointer">
                 SignUp
@@ -94,7 +94,7 @@ export function SignUpForm({
               </div>
               <div className="text-center text-sm">
                 Already have an account? 
-                <Link to="/" className="underline underline-offset-4 pl-1">
+                <Link to="/login" className="underline underline-offset-4 pl-1">
                   Login
                 </Link>
               </div>
@@ -110,8 +110,8 @@ export function SignUpForm({
         </CardContent>
       </Card>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-        By clicking continue, you agree to our <Link to="#">Terms of Service</Link>{" "}
-        and <Link to="#">Privacy Policy</Link>.
+        By clicking continue, you agree to our <Link to="/terms-and-conditions">Terms of Service</Link>{" "}
+        and <Link to="/terms-and-conditions">Privacy Policy</Link>.
       </div>
     </div>
   )

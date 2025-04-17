@@ -1,54 +1,88 @@
-# React + TypeScript + Vite
+# ChatX: AI Chat Web Application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+ChatX is a full-stack AI chat web application built with Vite, React, TypeScript, Tailwind CSS, shadcn/ui, and Supabase.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- User authentication (signup/login)
+- Chat interface with AI responses
+- Persistent chat history
+- Multiple chat sessions
+- Responsive design
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- **Frontend**: Vite, React, TypeScript
+- **Styling**: Tailwind CSS, shadcn/ui components
+- **Backend**: Supabase (Authentication, Database)
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Prerequisites
+
+- Node.js (v18 or higher)
+- npm or yarn
+- Supabase account
+
+## Getting Started
+
+### 1. Clone the repository
+
+```bash
+git clone <repository-url>
+cd chatx
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### 2. Install dependencies
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npm install
+# or
+yarn install
 ```
+
+### 3. Set up Supabase
+
+1. Create a new Supabase project at [supabase.com](https://supabase.com)
+2. Enable email/password authentication in Authentication > Providers
+3. Run the SQL from `supabase_schema.sql` in the SQL Editor to set up the database schema
+4. Get your project URL and anon key from Settings > API
+
+### 4. Configure environment variables
+
+Create a `.env` file in the root directory:
+
+```
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+### 5. Run the development server
+
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+The app should now be running at http://localhost:5173
+
+## Project Structure
+
+- `src/components`: Reusable UI components
+- `src/context`: React context providers for state management
+- `src/module`: Feature-specific modules (auth, chat, etc.)
+- `src/services`: Backend API services (Supabase)
+- `src/config`: Configuration and types
+- `src/pages`: Page components
+
+## Database Schema
+
+The application uses two main tables:
+
+1. `chat_sessions`: Stores chat sessions with titles
+2. `chat_messages`: Stores individual messages within sessions
+
+Row-level security policies are in place to ensure users can only access their own data.
+
+## License
+
+MIT

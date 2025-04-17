@@ -29,11 +29,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Handle initial session loading
     supabaseClient.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
 
+    // Listen for auth changes
     const { data: listener } = supabaseClient.auth.onAuthStateChange(
       (_event, session) => {
         setSession(session);
@@ -50,8 +52,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) {
       console.error("Logout error:", error.message);
     } else {
-      setSession(null);
-      navigate("/"); // redirect to login page after logout
+      setSession(null); 
+      navigate("/login"); // redirect to login page after logout
     }
   }, [navigate]);
 

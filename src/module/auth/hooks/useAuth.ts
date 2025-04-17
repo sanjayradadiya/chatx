@@ -13,7 +13,7 @@ const useAuth = () => {
   // 👇 If already logged in, redirect to home
   useEffect(() => {
     if (session) {
-      navigate('/home');
+      navigate('/dashboard');
     }
   }, [session, navigate]);
 
@@ -25,7 +25,7 @@ const useAuth = () => {
         position: "top-center"
       })
     } else {
-      navigate('/home');
+      navigate('/dashboard');
     }
   }, [navigate]);
 

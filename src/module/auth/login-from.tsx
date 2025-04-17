@@ -45,14 +45,14 @@ const LoginForm = ({
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
+                  <Link
+                    to="/forgot-password"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
                   >
                     Forgot your password?
-                  </a>
+                  </Link>
                 </div>
-                <Input id="password" type="password" required {...register("password")} />
+                <Input id="password" type="password" placeholder="Password" required {...register("password")} />
               </div>
               <Button type="submit" className="w-full cursor-pointer">
                 Login
@@ -109,8 +109,8 @@ const LoginForm = ({
         </CardContent>
       </Card>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+        By clicking continue, you agree to our <Link to="/terms-and-conditions">Terms of Service</Link>{" "}
+        and <Link to="/terms-and-conditions">Privacy Policy</Link>.
       </div>
     </div>
   )
