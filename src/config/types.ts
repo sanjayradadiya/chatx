@@ -16,9 +16,13 @@ export interface ChatSession {
   created_at: string;
 }
 
+export type MessageType = 'text' | 'emoji' | 'image';
+
 export interface ChatMessage {
   id: string;
   text: string;
+  message_type: MessageType;
+  file_url?: string;
   session_id: string;
   user_id: string;
   is_ai: boolean;

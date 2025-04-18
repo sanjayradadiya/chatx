@@ -13,8 +13,7 @@ export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { action } = useAuth();
-  const { signUpNewUser } = action;
+  const { signUpNewUser } = useAuth();
   const {
     register,
     handleSubmit,

@@ -26,7 +26,7 @@ export function ChatList() {
         <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Chats</h2>
         <div className="space-y-1">
           <Button 
-            variant="secondary"
+            variant="outline"
             className="w-full justify-start cursor-pointer"
             onClick={handleNewChat}
             disabled={isNewChatSession}

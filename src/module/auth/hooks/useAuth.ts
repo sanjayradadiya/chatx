@@ -52,11 +52,8 @@ const useAuth = () => {
   }, []);
 
   return {
-    state: {},
-    action: {
-      signInWithEmail,
-      signUpNewUser,
-    },
+    signInWithEmail,
+    signUpNewUser,
   };
 };
 

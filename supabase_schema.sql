@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS chat_messages (
     session_id UUID NOT NULL REFERENCES chat_sessions(id) ON DELETE CASCADE,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     text TEXT NOT NULL,
+    message_type TEXT NOT NULL DEFAULT 'text', -- 'text', 'emoji', 'image'
+    file_url TEXT, -- URL to the file in storage
     is_ai BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
@@ -51,6 +53,22 @@ WITH CHECK (
         SELECT id FROM chat_sessions WHERE user_id = auth.uid()
     )
 );
+
+-- Create bucket for chat images
+INSERT INTO storage.buckets (id, name, public) VALUES ('chat_images', 'chat_images', true);
+
+-- Set up Row Level Security (RLS) for chat_images bucket
+CREATE POLICY "User can upload images" 
+ON storage.objects FOR INSERT
+WITH CHECK (
+    bucket_id = 'chat_images' AND 
+    auth.uid() = owner
+);
+
+-- Create policy to allow public read access to chat images
+CREATE POLICY "Anyone can view chat images" 
+ON storage.objects FOR SELECT
+USING (bucket_id = 'chat_images');
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions(user_id);

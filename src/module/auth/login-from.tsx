@@ -13,8 +13,8 @@ const LoginForm = ({
   className,
   ...props
 }: React.ComponentProps<"div">) => {
-  const { action } = useAuth();
-  const { signInWithEmail,  } = action;
+  const { signInWithEmail } = useAuth();
+
   const {
     register,
     handleSubmit,
