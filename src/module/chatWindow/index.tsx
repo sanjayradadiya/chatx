@@ -11,12 +11,21 @@ import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
-import { GoogleGenAI } from "@google/genai";
-import { APP_CONFIG } from "@/config/config";
+import { aiService } from "@/services/ai-service";
 
 const ChatWindow = () => {
   const { id } = useParams();
-  const { messages, sendMessage, sendImageMessage, selectChatSession, loading, isNewChatSession, updateChatTitle } = useChatContext();
+  const { 
+    messages, 
+    sendMessage, 
+    sendImageMessage, 
+    selectChatSession, 
+    loading, 
+    isNewChatSession, 
+    updateChatTitle,
+    streamingMessage,
+    isStreaming 
+  } = useChatContext();
   const [input, setInput] = useState("");
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -34,7 +43,7 @@ const ChatWindow = () => {
     }
   }, [id, selectChatSession]);
 
-  // Scroll to bottom when messages change
+  // Scroll to bottom when messages change or streaming happens
   useEffect(() => {
     const scrollToBottom = () => {
       if (scrollAreaRef.current && shouldScrollRef.current) {
@@ -43,11 +52,16 @@ const ChatWindow = () => {
       }
     };
 
+    // When streaming, we want to scroll to the bottom as the message grows
+    if (isStreaming) {
+      scrollToBottom();
+    }
+
     // Immediate scroll
     scrollToBottom();
     
     // Add a small delay to ensure content is fully rendered
-    const timeoutId = setTimeout(scrollToBottom, 100);
+    const timeoutId = setTimeout(scrollToBottom, 500);
     
     // Add a mutation observer to detect height changes
     if (scrollAreaRef.current) {
@@ -67,28 +81,15 @@ const ChatWindow = () => {
     }
     
     return () => clearTimeout(timeoutId);
-  }, [messages, loading, id]); // Added 'id' dependency to handle chat switching
+  }, [messages, loading, id, isStreaming, streamingMessage]); // Added streaming dependencies
 
   // Function to generate a chat title based on the first user message
   const generateChatTitle = async (userMessage: string) => {
     if (!id || !isNewChatSession || firstMessageSentRef.current) return;
     
     try {
-      // Initialize the Gemini API
-      const genAI = new GoogleGenAI({ apiKey: APP_CONFIG.GEMINI_API_KEY });
-      
-      // Create a prompt to generate a short title
-      const prompt = `Generate a very short, concise title (3-5 words max) for a chat that starts with this message: "${userMessage}". 
-      The title should capture the essence of what the conversation might be about. 
-      Return ONLY the title text without quotes or any other text.`;
-      
-      // Generate the title using the model
-      const response = await genAI.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: prompt
-      });
-      
-      const title = response.text || "";
+      // Generate the title using the AI service
+      const title = await aiService.generateChatTitle(userMessage);
       
       // Update the chat title
       if (title && id) {
@@ -204,7 +205,7 @@ const ChatWindow = () => {
         onScroll={handleScroll}
       >
         <div className="flex flex-col gap-4">
-          {messages.length === 0 ? (
+          {messages.length === 0 && !isStreaming ? (
             <div className="flex flex-col items-center justify-center h-48 gap-4 text-center">
               <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
                 <Bot className="h-8 w-8 text-primary" />
@@ -217,42 +218,57 @@ const ChatWindow = () => {
               </div>
             </div>
           ) : (
-            messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`flex items-start gap-2 ${
-                  !msg.is_ai ? "justify-end" : "justify-start"
-                }`}
-              >
-                {msg.is_ai && (
-                  <Avatar className="h-8 w-8">
-                    
-                    <AvatarFallback><Bot/></AvatarFallback>
-                  </Avatar>
-                )}
+            <>
+              {/* Display all existing messages */}
+              {messages.map((msg) => (
                 <div
-                  className={`rounded-lg px-3 py-2 text-sm max-w-[75%] ${
-                    !msg.is_ai
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
+                  key={msg.id}
+                  className={`flex items-start gap-2 ${
+                    !msg.is_ai ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {renderMessage(msg)}
+                  {msg.is_ai && (
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback><Bot/></AvatarFallback>
+                    </Avatar>
+                  )}
+                  <div
+                    className={`rounded-lg px-3 py-2 text-sm max-w-[75%] ${
+                      !msg.is_ai
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    }`}
+                  >
+                    {renderMessage(msg)}
+                  </div>
+                  {!msg.is_ai && (
+                    <Avatar className="h-9 w-9">
+                      <AvatarFallback>Me</AvatarFallback>
+                    </Avatar>
+                  )}
                 </div>
-                {!msg.is_ai && (
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>Me</AvatarFallback>
+              ))}
+              
+              {/* Display streaming message */}
+              {isStreaming && streamingMessage !== null && (
+                <div className="flex items-start gap-2 justify-start">
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback><Bot/></AvatarFallback>
                   </Avatar>
-                )}
-              </div>
-            ))
+                  <div className="rounded-lg px-3 py-2 text-sm max-w-[75%] bg-muted">
+                    <MarkdownRenderer>{streamingMessage}</MarkdownRenderer>
+                  </div>
+                </div>
+              )}
+            </>
           )}
-          {loading && (
+          
+          {loading && !isStreaming && (
             <div className="flex items-start gap-2 justify-start">
-              <Avatar className="h-8 w-8">
-                <AvatarFallback>AI</AvatarFallback>
+              <Avatar className="h-9 w-9">
+                <AvatarFallback><Bot/></AvatarFallback>
               </Avatar>
-              <div className="bg-muted rounded-lg p-2">
+              <div className="rounded-lg px-3 py-2 text-sm bg-muted">
                 <TypingIndicator />
               </div>
             </div>

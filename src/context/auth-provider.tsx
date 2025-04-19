@@ -7,8 +7,8 @@ import {
   useCallback,
 } from "react";
 import { Session } from "@supabase/supabase-js";
-import supabaseClient from "@/services/supabase/client";
 import { useNavigate } from "react-router";
+import { authService } from "@/services/auth-service";
 
 interface AuthContextType {
   session: Session | null;
@@ -30,25 +30,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     // Handle initial session loading
-    supabaseClient.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
+    authService.getCurrentSession().then((currentSession) => {
+      setSession(currentSession);
       setLoading(false);
     });
 
     // Listen for auth changes
-    const { data: listener } = supabaseClient.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-      }
-    );
+    const subscription = authService.subscribeToAuthChanges((currentSession) => {
+      setSession(currentSession);
+    });
 
     return () => {
-      listener?.subscription?.unsubscribe();
+      subscription.unsubscribe();
     };
   }, []);
 
   const logout = useCallback(async () => {
-    const { error } = await supabaseClient.auth.signOut();
+    const { error } = await authService.signOut();
     if (error) {
       console.error("Logout error:", error.message);
     } else {

@@ -1,6 +1,6 @@
 import { LoginFormInput, SignUpFormInput } from "@/config/types";
 import { useAuthProvider } from "@/context/auth-provider";
-import supabaseClient from "@/services/supabase/client";
+import { authService } from "@/services/auth-service";
 import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner"
@@ -18,7 +18,7 @@ const useAuth = () => {
   }, [session, navigate]);
 
   const signInWithEmail = useCallback(async (loginData: LoginFormInput) => {
-    const { error } = await supabaseClient.auth.signInWithPassword(loginData);
+    const { error } = await authService.signInWithEmail(loginData);
 
     if (error) {
       toast(error.message, {
@@ -30,25 +30,17 @@ const useAuth = () => {
   }, [navigate]);
 
   const signUpNewUser = useCallback(async (signUpData: SignUpFormInput) => {
-    const { error } = await supabaseClient.auth.signUp({
-      email: signUpData.email,
-      password: signUpData.password,
-      options: {
-        data: {
-          'fullname': signUpData.fullname,
-        }
-      },
-    })
+    const { error } = await authService.signUpWithEmail(signUpData);
 
     if (error) {
       toast(error.message, {
         position: 'top-center'
       });
+    } else {
+      toast("Check your email for verification link", {
+        position: "top-center"
+      });
     }
-
-    toast("Check your email for verification link", {
-      position: "top-center"
-    })
   }, []);
 
   return {

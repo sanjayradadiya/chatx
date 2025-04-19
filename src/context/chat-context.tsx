@@ -7,10 +7,9 @@ import {
   useCallback,
   useEffect,
 } from "react";
-import { chatService } from "@/services/supabase/chat-service";
+import { chatService } from "@/services/chat-service";
 import { useAuthProvider } from "./auth-provider";
-import { GoogleGenAI } from "@google/genai";
-import { APP_CONFIG } from "@/config/config";
+import { aiService } from "@/services/ai-service";
 
 interface ChatContextType {
   chatSessions: ChatSession[];
@@ -19,6 +18,8 @@ interface ChatContextType {
   loading: boolean;
   isInitializing: boolean;
   isNewChatSession: boolean;
+  streamingMessage: string | null;
+  isStreaming: boolean;
   fetchChatSessions: () => Promise<void>;
   createNewChat: () => Promise<ChatSession | null>;
   selectChatSession: (sessionId: string) => Promise<void>;
@@ -35,6 +36,8 @@ const ChatContext = createContext<ChatContextType>({
   loading: false,
   isInitializing: true,
   isNewChatSession: false,
+  streamingMessage: null,
+  isStreaming: false,
   fetchChatSessions: async () => {},
   createNewChat: async () => null,
   selectChatSession: async () => {},
@@ -53,10 +56,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [isNewChatSession, setIsNewChatSession] = useState<boolean>(false);
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
+  const [streamingMessage, setStreamingMessage] = useState<string | null>(null);
+  const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const { session } = useAuthProvider();
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const ai = new GoogleGenAI({ apiKey: APP_CONFIG.GEMINI_API_KEY });
 
   // Automatically load sessions when authenticated
   useEffect(() => {
@@ -146,6 +148,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     async (text: string, messageType: MessageType = "text") => {
       if (!session?.user.id || !currentSession) return;
       setIsNewChatSession(false); // when message send first time
+      
       // Send user message
       const userMessage = await chatService.sendUserMessage(
         currentSession.id,
@@ -156,36 +159,43 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
       if (userMessage) {
         setMessages((prev) => [...prev, userMessage]);
-        setLoading(true);
-        // Get AI response
-        const randomResponse = await generateAiResponse(userMessage.text);
+        setIsStreaming(true);
+        setStreamingMessage("");
+        
+        try {
+          // Generate a streaming response using AI service
+          const stream = await aiService.generateContentStream(text);
+          let fullResponse = "";
 
-        // Send AI response
-        const aiMessage = await chatService.sendAIMessage(
-          currentSession.id,
-          session.user.id,
-          randomResponse
-        );
+          // Process each chunk as it arrives
+          for await (const chunk of stream) {
+            if (chunk && chunk.text) {
+              const chunkText = chunk.text;
+              fullResponse += chunkText;
+              setStreamingMessage(fullResponse);
+            }
+          }
 
-        if (aiMessage) {
-          setMessages((prev) => [...prev, aiMessage]);
+          // Save the complete response to database
+          const aiMessage = await chatService.sendAIMessage(
+            currentSession.id,
+            session.user.id,
+            fullResponse
+          );
+
+          if (aiMessage) {
+            setMessages((prev) => [...prev, aiMessage]);
+          }
+          
+        } catch (error) {
+          console.error("Error generating AI response:", error);
+        } finally {
+          setIsStreaming(false);
+          setStreamingMessage(null);
         }
-
-        setLoading(false);
       }
     },
     [currentSession, session]
-  );
-
-  const generateAiResponse = useCallback(
-    async (userMessage: string): Promise<string> => {
-      const response = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
-        contents: userMessage,
-      });
-      return response.text || "";
-    },
-    [ai]
   );
 
   const sendImageMessage = useCallback(
@@ -205,19 +215,40 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
         if (userMessage) {
           setMessages((prev) => [...prev, userMessage]);
+          setIsStreaming(true);
+          setStreamingMessage("");
+          
+          try {
+            // Generate a streaming response using AI service
+            const prompt = userMessage.text || "Describe this image";
+            const stream = await aiService.generateContentStream(prompt);
+            let fullResponse = "";
 
-            // Get AI response
-          const randomResponse = await generateAiResponse(userMessage.text);
+            // Process each chunk as it arrives
+            for await (const chunk of stream) {
+              if (chunk && chunk.text) {
+                const chunkText = chunk.text;
+                fullResponse += chunkText;
+                setStreamingMessage(fullResponse);
+              }
+            }
 
-          // Send AI response
-          const aiMessage = await chatService.sendAIMessage(
-            currentSession.id,
-            session.user.id,
-            randomResponse
-          );
+            // Save the complete response to database
+            const aiMessage = await chatService.sendAIMessage(
+              currentSession.id,
+              session.user.id,
+              fullResponse
+            );
 
-          if (aiMessage) {
-            setMessages((prev) => [...prev, aiMessage]);
+            if (aiMessage) {
+              setMessages((prev) => [...prev, aiMessage]);
+            }
+            
+          } catch (error) {
+            console.error("Error generating AI response:", error);
+          } finally {
+            setIsStreaming(false);
+            setStreamingMessage(null);
           }
         }
       } catch (error) {
@@ -291,8 +322,10 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         currentSession,
         messages,
         loading,
-        isNewChatSession,
         isInitializing,
+        isNewChatSession,
+        streamingMessage,
+        isStreaming,
         fetchChatSessions,
         createNewChat,
         selectChatSession,

@@ -1,5 +1,5 @@
 import { ChatMessage, ChatSession, MessageType } from "@/config/types";
-import supabaseClient from "./client";
+import supabaseClient from "./supabase/client";
 import { v4 as uuidv4 } from 'uuid';
 
 export const chatService = {
