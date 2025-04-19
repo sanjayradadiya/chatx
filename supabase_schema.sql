@@ -74,3 +74,26 @@ USING (bucket_id = 'chat_images');
 CREATE INDEX IF NOT EXISTS idx_chat_sessions_user_id ON chat_sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_session_id ON chat_messages(session_id);
 CREATE INDEX IF NOT EXISTS idx_chat_messages_user_id ON chat_messages(user_id); 
+
+-- Create policy to allow deleting own sessions
+CREATE POLICY "Users can delete their own sessions"
+ON chat_sessions FOR DELETE
+USING (
+    user_id = auth.uid()
+);
+
+-- Create policy to allow deleting messages from user's sessions
+CREATE POLICY "Users can delete messages from their sessions"
+ON chat_messages FOR DELETE
+USING (
+    session_id IN (
+        SELECT id FROM chat_sessions WHERE user_id = auth.uid()
+    )
+);
+
+-- Create policy to allow updating own chat session title
+CREATE POLICY "Users can update their own session titles"
+ON chat_sessions FOR UPDATE
+USING (
+    user_id = auth.uid()
+);

@@ -6,61 +6,135 @@ import { useParams } from "react-router";
 import { useChatContext } from "@/context/chat-context";
 import { Bot, Smile, X, Paperclip, Send } from "lucide-react";
 import { TypingIndicator } from "./components/typing-indicator";
-import { MessageType } from "@/config/types";
-import EmojiPicker from 'emoji-picker-react';
+import { MessageType, ChatMessage } from "@/config/types";
+import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
+import { GoogleGenAI } from "@google/genai";
+import { APP_CONFIG } from "@/config/config";
 
 const ChatWindow = () => {
   const { id } = useParams();
-  const { messages, sendMessage, sendImageMessage, selectChatSession, loading } = useChatContext();
+  const { messages, sendMessage, sendImageMessage, selectChatSession, loading, isNewChatSession, updateChatTitle } = useChatContext();
   const [input, setInput] = useState("");
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const firstMessageSentRef = useRef<boolean>(false);
+  const shouldScrollRef = useRef(true);
 
   useEffect(() => {
     if (id) {
       selectChatSession(id);
+      // Reset the first message sent flag when changing chats
+      firstMessageSentRef.current = false;
     }
   }, [id, selectChatSession]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     const scrollToBottom = () => {
-      if (scrollAreaRef.current) {
-        scrollAreaRef.current.scrollTo({
-          top: scrollAreaRef.current.scrollHeight,
-          behavior: 'smooth'
-        });
+      if (scrollAreaRef.current && shouldScrollRef.current) {
+        const scrollArea = scrollAreaRef.current;
+        scrollArea.scrollTop = scrollArea.scrollHeight;
       }
     };
 
+    // Immediate scroll
     scrollToBottom();
-  }, [messages, loading, scrollAreaRef]);
+    
+    // Add a small delay to ensure content is fully rendered
+    const timeoutId = setTimeout(scrollToBottom, 100);
+    
+    // Add a mutation observer to detect height changes
+    if (scrollAreaRef.current) {
+      const observer = new MutationObserver(scrollToBottom);
+      
+      observer.observe(scrollAreaRef.current, { 
+        childList: true, 
+        subtree: true,
+        characterData: true,
+        attributes: true
+      });
+      
+      return () => {
+        observer.disconnect();
+        clearTimeout(timeoutId);
+      };
+    }
+    
+    return () => clearTimeout(timeoutId);
+  }, [messages, loading, id]); // Added 'id' dependency to handle chat switching
+
+  // Function to generate a chat title based on the first user message
+  const generateChatTitle = async (userMessage: string) => {
+    if (!id || !isNewChatSession || firstMessageSentRef.current) return;
+    
+    try {
+      // Initialize the Gemini API
+      const genAI = new GoogleGenAI({ apiKey: APP_CONFIG.GEMINI_API_KEY });
+      
+      // Create a prompt to generate a short title
+      const prompt = `Generate a very short, concise title (3-5 words max) for a chat that starts with this message: "${userMessage}". 
+      The title should capture the essence of what the conversation might be about. 
+      Return ONLY the title text without quotes or any other text.`;
+      
+      // Generate the title using the model
+      const response = await genAI.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: prompt
+      });
+      
+      const title = response.text || "";
+      
+      // Update the chat title
+      if (title && id) {
+        await updateChatTitle(id, title);
+      }
+      
+      // Mark that we've already generated a title for this chat
+      firstMessageSentRef.current = true;
+    } catch (error) {
+      console.error("Error generating chat title:", error);
+      // If title generation fails, we'll keep the default title
+    }
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Ensure we should scroll to bottom after sending a message
+    shouldScrollRef.current = true;
     
     if (selectedFile) {
       await sendImageMessage(selectedFile, input);
       setSelectedFile(null);
       setImagePreview(null);
+      
+      // If this is a first message in a new chat, generate title
+      if (isNewChatSession && !firstMessageSentRef.current && id) {
+       await generateChatTitle(input || "Image shared");
+      }
     } else if (input.trim()) {
       // Check if the message is only emojis
       const emojiRegex = /^(\p{Emoji}|\s)+$/u;
       const messageType: MessageType = emojiRegex.test(input) ? 'emoji' : 'text';
       
+      // If this is a first message in a new chat, generate title
+      if (isNewChatSession && !firstMessageSentRef.current && id) {
+       await generateChatTitle(input);
+      }
+
       await sendMessage(input, messageType);
     }
     
     setInput("");
   };
 
-  const handleEmojiClick = (emojiData: any) => {
+  const handleEmojiClick = (emojiData: EmojiClickData) => {
     setInput(prev => prev + emojiData.emoji);
   };
 
@@ -92,8 +166,17 @@ const ChatWindow = () => {
     }
   };
 
+  // Handle scroll events to determine whether to auto-scroll
+  const handleScroll = () => {
+    if (scrollAreaRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
+      // If we're within 100px of the bottom, enable auto-scrolling
+      shouldScrollRef.current = scrollHeight - scrollTop - clientHeight < 100;
+    }
+  };
+
   // Function to render messages based on their type
-  const renderMessage = (msg: any) => {
+  const renderMessage = (msg: ChatMessage) => {
     if (msg.message_type === 'image' && msg.file_url) {
       return (
         <div className="flex flex-col gap-2">
@@ -115,7 +198,11 @@ const ChatWindow = () => {
   return (
     <div className="flex flex-col h-full">
       {/* Chat messages */}
-      <div className="flex-1 overflow-auto p-4" ref={scrollAreaRef}>
+      <div 
+        className="flex-1 overflow-auto p-4" 
+        ref={scrollAreaRef}
+        onScroll={handleScroll}
+      >
         <div className="flex flex-col gap-4">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-48 gap-4 text-center">
@@ -230,7 +317,7 @@ const ChatWindow = () => {
                 <Smile className="h-4 w-4" />
               </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-full p-0 " align="start" onFocusOutside={() => setIsEmojiPickerOpen(false)}>
+            <PopoverContent className="w-full p-0 not-first:" align="start" onFocusOutside={() => setIsEmojiPickerOpen(false)}>
               <EmojiPicker open={isEmojiPickerOpen} lazyLoadEmojis={true} onEmojiClick={handleEmojiClick} />
             </PopoverContent>
           </Popover>

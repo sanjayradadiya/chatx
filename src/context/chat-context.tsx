@@ -24,6 +24,8 @@ interface ChatContextType {
   selectChatSession: (sessionId: string) => Promise<void>;
   sendMessage: (text: string, messageType?: MessageType) => Promise<void>;
   sendImageMessage: (file: File, caption?: string) => Promise<void>;
+  updateChatTitle: (sessionId: string, title: string) => Promise<void>;
+  deleteChatSession: (sessionId: string) => Promise<boolean>;
 }
 
 const ChatContext = createContext<ChatContextType>({
@@ -38,6 +40,8 @@ const ChatContext = createContext<ChatContextType>({
   selectChatSession: async () => {},
   sendMessage: async () => {},
   sendImageMessage: async () => {},
+  updateChatTitle: async () => {},
+  deleteChatSession: async () => false,
 });
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
@@ -115,7 +119,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       if (!session?.user.id || !chatSessions.length) return;
 
       setLoading(true);
-      setIsNewChatSession(false);
 
       try {
         // Find session in the current list
@@ -142,7 +145,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const sendMessage = useCallback(
     async (text: string, messageType: MessageType = "text") => {
       if (!session?.user.id || !currentSession) return;
-
+      setIsNewChatSession(false); // when message send first time
       // Send user message
       const userMessage = await chatService.sendUserMessage(
         currentSession.id,
@@ -226,6 +229,61 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     [currentSession, session]
   );
 
+  const updateChatTitle = useCallback(
+    async (sessionId: string, title: string) => {
+      if (!session?.user.id) return;
+
+      try {
+        const updatedSession = await chatService.updateChatTitle(sessionId, title);
+        
+        if (updatedSession) {
+          // Update the chat sessions list
+          setChatSessions(prev => 
+            prev.map(session => 
+              session.id === sessionId ? {...session, title} : session
+            )
+          );
+          
+          // Update current session if it's the one being modified
+          if (currentSession?.id === sessionId) {
+            setCurrentSession({...currentSession, title});
+          }
+        }
+      } catch (error) {
+        console.error("Error updating chat title:", error);
+      }
+    },
+    [currentSession, session]
+  );
+
+  const deleteChatSession = useCallback(
+    async (sessionId: string): Promise<boolean> => {
+      if (!session?.user.id) return false;
+
+      try {
+        const success = await chatService.deleteChatSession(sessionId);
+        
+        if (success) {
+          // Remove the session from the local state
+          setChatSessions(prev => prev.filter(session => session.id !== sessionId));
+          
+          // If the deleted session was the current one, clear current session
+          if (currentSession?.id === sessionId) {
+            setCurrentSession(null);
+            setMessages([]);
+          }
+          
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error("Error deleting chat session:", error);
+        return false;
+      }
+    },
+    [currentSession, session]
+  );
+
   return (
     <ChatContext.Provider
       value={{
@@ -240,6 +298,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         selectChatSession,
         sendMessage,
         sendImageMessage,
+        updateChatTitle,
+        deleteChatSession,
       }}
     >
       {children}

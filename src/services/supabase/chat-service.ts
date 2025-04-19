@@ -157,5 +157,57 @@ export const chatService = {
     }
     
     return data;
+  },
+
+  // Update chat session title
+  async updateChatTitle(
+    sessionId: string,
+    title: string
+  ): Promise<ChatSession | null> {
+    const { data, error } = await supabaseClient
+      .from('chat_sessions')
+      .update({ title })
+      .eq('id', sessionId)
+      .select()
+      .single();
+    
+    if (error) {
+      console.error("Error updating chat title:", error);
+      return null;
+    }
+    
+    return data;
+  },
+
+  // Delete a chat session and its messages
+  async deleteChatSession(sessionId: string): Promise<boolean> {
+    try {
+      // First delete all messages in the session
+      const { error: messagesError } = await supabaseClient
+        .from('chat_messages')
+        .delete()
+        .eq('session_id', sessionId);
+      
+      if (messagesError) {
+        console.error("Error deleting chat messages:", messagesError);
+        return false;
+      }
+      
+      // Then delete the session itself
+      const { error: sessionError } = await supabaseClient
+        .from('chat_sessions')
+        .delete()
+        .eq('id', sessionId);
+      
+      if (sessionError) {
+        console.error("Error deleting chat session:", sessionError);
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error in deleteChatSession:", error);
+      return false;
+    }
   }
 }; 

@@ -3,11 +3,13 @@ import { Separator } from "@/components/ui/separator";
 import { useChatContext } from "@/context/chat-context";
 import { MessagesSquare, Plus } from "lucide-react";
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 
 export function ChatList() {
-  const { chatSessions, fetchChatSessions, createNewChat, isNewChatSession } = useChatContext();
+  const { chatSessions, fetchChatSessions, createNewChat, isNewChatSession } =
+    useChatContext();
   const navigate = useNavigate();
+  const { id } = useParams();
 
   useEffect(() => {
     fetchChatSessions();
@@ -23,9 +25,11 @@ export function ChatList() {
   return (
     <div className="flex flex-col h-full">
       <div className="px-3 py-2">
-        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">Chats</h2>
+        <h2 className="mb-2 px-4 text-lg font-semibold tracking-tight">
+          Chats
+        </h2>
         <div className="space-y-1">
-          <Button 
+          <Button
             variant="outline"
             className="w-full justify-start cursor-pointer"
             onClick={handleNewChat}
@@ -47,7 +51,7 @@ export function ChatList() {
             chatSessions.map((chat) => (
               <Button
                 key={chat.id}
-                variant="ghost"
+                variant={chat.id === id ? "secondary" : "ghost"}
                 asChild
                 className="w-full justify-start"
               >
@@ -71,4 +75,4 @@ export function ChatList() {
       </div>
     </div>
   );
-} 
+}
