@@ -6,10 +6,10 @@ import ProtectedRoute from "./protected-route";
 import ChatWindow from "@/module/chatWindow";
 import { AppLayout } from "@/module/layout/app-layout";
 import NotFound from "@/pages/not-found/not-found";
-import AccountPage from "@/pages/account/account-page";
 import TermsAndConditions from "@/module/auth/TermsAndConditions";
 import ResetPassword from "@/pages/reser-password/reser-password";
 import ForgotPassword from "@/pages/forgot-password/forgot-password";
+import ProfilePage from "@/pages/profile/profile-page";
 
 const RootNavigator = () => {
   return (
@@ -23,7 +23,7 @@ const RootNavigator = () => {
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<WelcomeScreen />} />
           <Route path="/chat/:id" element={<ChatWindow />} />
-          <Route path="/account" element={<AccountPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

@@ -62,15 +62,6 @@ export function ChatList() {
               </Button>
             ))
           )}
-          {isNewChatSession && (
-            <div className="flex justify-center py-4">
-              <div className="animate-pulse flex space-x-2">
-                <div className="h-2 w-2 bg-primary rounded-full" />
-                <div className="h-2 w-2 bg-primary rounded-full" />
-                <div className="h-2 w-2 bg-primary rounded-full" />
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

@@ -5,11 +5,7 @@ import {
   User,
 } from "lucide-react"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,20 +28,26 @@ import {
 import { useAuthProvider } from "@/context/auth-provider"
 import { useTheme } from "@/context/theme-provider"
 import { Link } from "react-router"
+import { useCallback, useMemo } from "react"
 
-export function NavUser({
-  user,
-}: {
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}) {
+export function NavUser() {
   const { isMobile } = useSidebar()
-  const { logout } = useAuthProvider();
+  const { logout, currentUser } = useAuthProvider();
   const { setTheme } = useTheme();
   
+  const userProfile = useMemo(() => {
+    return {
+      avatarUrl: currentUser?.user_metadata.avatar_url,
+      fullname: currentUser?.user_metadata.fullname,
+      email: currentUser?.email,
+    };
+  }, [currentUser]);
+  
+  const getInitials = useCallback(() => {
+    const name = userProfile.fullname || "";
+    return name.charAt(0) + (name.split(" ")[1]?.charAt(0) || "");
+  }, [userProfile]);
+
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -56,12 +58,12 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg">{user.name.charAt(0)}{user.name.split(' ')[1]?.charAt(0) || ''}</AvatarFallback>
+                <AvatarImage src={userProfile.avatarUrl} alt={userProfile.fullname || "User"} />
+                <AvatarFallback className="rounded-lg">{getInitials()}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-semibold">{userProfile.fullname}</span>
+                <span className="truncate text-xs">{userProfile.email}</span>
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>
@@ -74,21 +76,21 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
-                  <AvatarFallback className="rounded-lg">{user.name.charAt(0)}{user.name.split(' ')[1]?.charAt(0) || ''}</AvatarFallback>
+                  <AvatarImage src={userProfile.avatarUrl} alt={userProfile.fullname || "User"} />
+                  <AvatarFallback className="rounded-lg">{getInitials()}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{user.name}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-semibold">{userProfile.fullname}</span>
+                  <span className="truncate text-xs">{userProfile.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>           
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem asChild>
-                <Link to="/account">
+                <Link to="/profile">
                   <User className="mr-2 h-4 w-4" />
-                  Account
+                  Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSub>

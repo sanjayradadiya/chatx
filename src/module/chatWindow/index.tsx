@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { useState, useEffect, useRef } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams } from "react-router";
 import { useChatContext } from "@/context/chat-context";
 import { Bot, Smile, X, Paperclip, Send } from "lucide-react";
@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { toast } from "sonner";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
 import { aiService } from "@/services/ai-service";
+import { useAuthProvider } from "@/context/auth-provider";
 
 const ChatWindow = () => {
   const { id } = useParams();
@@ -33,8 +34,7 @@ const ChatWindow = () => {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const firstMessageSentRef = useRef<boolean>(false);
-  const shouldScrollRef = useRef(true);
-
+  const { currentUser } = useAuthProvider();
   useEffect(() => {
     if (id) {
       selectChatSession(id);
@@ -196,6 +196,14 @@ const ChatWindow = () => {
     }
   };
 
+  const userProfile = useMemo(() => {
+    return {
+      avatarUrl: currentUser?.user_metadata.avatar_url,
+      fullname: currentUser?.user_metadata.fullname,
+      email: currentUser?.email,
+    };
+  }, [currentUser]);
+
   return (
     <div className="flex flex-col h-full">
       {/* Chat messages */}
@@ -243,6 +251,10 @@ const ChatWindow = () => {
                   </div>
                   {!msg.is_ai && (
                     <Avatar className="h-9 w-9">
+                      <AvatarImage
+                        src={userProfile.avatarUrl}
+                        alt={userProfile.fullname || "User"}
+                      />
                       <AvatarFallback>Me</AvatarFallback>
                     </Avatar>
                   )}

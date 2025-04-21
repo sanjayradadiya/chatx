@@ -6,7 +6,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
-import { Session } from "@supabase/supabase-js";
+import { Session, User } from "@supabase/supabase-js";
 import { useNavigate } from "react-router";
 import { authService } from "@/services/auth-service";
 
@@ -14,17 +14,22 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   logout: () => void;
+  currentUser: User | null;
+  setCurrentUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   logout: () => {},
+  currentUser: null,
+  setCurrentUser: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const navigate = useNavigate();
 
@@ -38,6 +43,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     // Listen for auth changes
     const subscription = authService.subscribeToAuthChanges((currentSession) => {
       setSession(currentSession);
+    });
+
+    authService.getCurrentUser().then((currentUser) => {
+      setCurrentUser(currentUser);
     });
 
     return () => {
@@ -56,7 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [navigate]);
 
   return (
-    <AuthContext.Provider value={{ session, loading, logout }}>
+    <AuthContext.Provider value={{ session, loading, logout , currentUser, setCurrentUser}}>
       {children}
     </AuthContext.Provider>
   );

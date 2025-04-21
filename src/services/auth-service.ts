@@ -69,5 +69,16 @@ export const authService = {
     });
     
     return data.subscription;
+  },
+  
+  /**
+   * Update the current user's profile data
+   * @param userData Profile data to update (fullname, avatar_url)
+   * @returns Result of the update operation
+   */
+  async updateUserProfile(userData: { fullname?: string, avatar_url?: string }) {
+    return await supabaseClient.auth.updateUser({
+      data: userData
+    });
   }
 };

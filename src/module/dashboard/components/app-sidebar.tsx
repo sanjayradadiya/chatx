@@ -8,23 +8,15 @@ import {
 } from "@/components/ui/sidebar";
 import { NavUser } from "./nav-user";
 import { ChatList } from "./chat-list";
-import { useAuthProvider } from "@/context/auth-provider";
 import { Bot } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { session } = useAuthProvider();
-  
-  const user = {
-    name: session?.user.user_metadata?.fullname || "User",
-    email: session?.user.email || "",
-    avatar: "/avatars/user.jpg",
-  };
 
   return (
     <Sidebar {...props}>
       <SidebarHeader className="h-16 border-b border-sidebar-border">
-        <NavUser user={user} />
+        <NavUser />
       </SidebarHeader>
       <SidebarContent>
         <ChatList />
