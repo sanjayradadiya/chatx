@@ -10,6 +10,8 @@ import TermsAndConditions from "@/module/auth/TermsAndConditions";
 import ResetPassword from "@/pages/reser-password/reser-password";
 import ForgotPassword from "@/pages/forgot-password/forgot-password";
 import ProfilePage from "@/pages/profile/profile-page";
+import SubscriptionPage from "@/pages/subscription/subscription-page";
+import SubscriptionSuccessPage from "@/pages/subscription/subscription-success-page";
 
 const RootNavigator = () => {
   return (
@@ -24,6 +26,8 @@ const RootNavigator = () => {
           <Route path="/dashboard" element={<WelcomeScreen />} />
           <Route path="/chat/:id" element={<ChatWindow />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

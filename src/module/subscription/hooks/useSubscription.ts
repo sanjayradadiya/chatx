@@ -1,0 +1,156 @@
+import { useCallback, useEffect, useState, useRef } from "react";
+import { useAuthProvider } from "@/context/auth-provider";
+import { SubscriptionData, subscriptionService } from "@/services/subscription-service";
+import { loadStripe } from "@stripe/stripe-js";
+import { APP_CONFIG } from "@/config/config";
+import { toast } from "sonner";
+import { useLocation } from "react-router";
+
+export const useSubscription = () => {
+  const { currentUser } = useAuthProvider();
+  const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const location = useLocation();
+  const [processed, setProcessed] = useState(false);
+  const processingRef = useRef(false);
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!currentUser) {
+        setSubscription(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const subData = await subscriptionService.getUserSubscription(currentUser.id);
+        setSubscription(subData);
+      } catch (error) {
+        console.error("Error fetching subscription:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSubscription();
+  }, [currentUser]);
+
+  useEffect(() => {
+    // Extract query parameters
+    const params = new URLSearchParams(location.search);
+    const sessionId = params.get("session_id");
+    const plan = params.get("plan");
+
+    if (!sessionId || !plan || processed || processingRef.current || !currentUser) {
+      return;
+    }
+
+    const processPayment = async () => {
+      if (processingRef.current) return;
+      
+      processingRef.current = true;
+      try {
+        setLoading(true);
+        
+        // Update the subscription in the database
+        await subscriptionService.updateUserSubscription(currentUser.id, plan);
+        
+        // Refetch the subscription
+        const subData = await subscriptionService.getUserSubscription(currentUser.id);
+        setSubscription(subData);
+        
+        toast.success(`Successfully subscribed to the ${plan.replace('_', ' ')} plan`);
+        setProcessed(true);
+      } catch (error) {
+        console.error("Error handling subscription success:", error);
+        toast.error("Failed to update subscription");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    processPayment();
+  }, [location.search, currentUser, processed]);
+
+  /**
+   * Handle subscription
+   * @param planName The name of the plan to subscribe to
+   */
+  const handleSubscription = useCallback((planName: string) => {
+    if (planName === 'FREE') {
+      subscribeToFreePlan();
+    } else {
+      subscribeToPaidPlan(planName);
+    }
+  }, []);
+
+  /**
+   * Subscribe to the free plan
+   */
+  const subscribeToFreePlan = useCallback(async () => {
+    if (!currentUser) {
+      toast.error("You must be logged in to subscribe");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await subscriptionService.updateUserSubscription(currentUser.id, "FREE");
+      const subData = await subscriptionService.getUserSubscription(currentUser.id);
+      setSubscription(subData);
+      toast.success("Successfully subscribed to the Free plan");
+    } catch (error) {
+      console.error("Error subscribing to free plan:", error);
+      toast.error("Failed to subscribe to the Free plan");
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser]);
+
+  /**
+   * Subscribe to a paid plan
+   * @param planName The name of the plan to subscribe to
+   */
+  const subscribeToPaidPlan = useCallback(async (planName: string) => {
+    if (!currentUser) {
+      toast.error("You must be logged in to subscribe");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const stripe = await loadStripe(APP_CONFIG.STRIPE_PUBLIC_KEY as string);
+
+      if (!stripe) {
+        throw new Error("Failed to load Stripe");
+      }
+
+      // Create a checkout session and redirect to Stripe
+      const successUrl = `${window.location.origin}/subscription/success`;
+      const cancelUrl = `${window.location.origin}/subscription`;
+
+      const checkoutUrl = await subscriptionService.createCheckoutSession(
+        currentUser.id,
+        planName,
+        successUrl,
+        cancelUrl
+      );
+
+      // Redirect to Stripe checkout
+      window.location.href = checkoutUrl;
+    } catch (error) {
+      console.error("Error subscribing to paid plan:", error);
+      toast.error("Failed to initiate checkout");
+      setLoading(false);
+    }
+  }, [currentUser]);
+
+  return {
+    subscription,
+    loading,
+    processed,
+    handleSubscription,
+    subscribeToFreePlan,
+    subscribeToPaidPlan,
+  };
+}; 

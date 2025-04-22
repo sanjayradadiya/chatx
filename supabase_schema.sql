@@ -97,3 +97,34 @@ ON chat_sessions FOR UPDATE
 USING (
     user_id = auth.uid()
 );
+
+-- Create user_subscriptions table
+CREATE TABLE IF NOT EXISTS user_subscriptions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    plan_name TEXT NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
+);
+
+-- Set up Row Level Security (RLS) for user_subscriptions
+ALTER TABLE user_subscriptions ENABLE ROW LEVEL SECURITY;
+
+-- Create policy to allow users to only see their own subscriptions
+CREATE POLICY "Users can view their own subscriptions" 
+ON user_subscriptions FOR SELECT 
+USING (auth.uid() = user_id);
+
+-- Create policy to allow users to insert their own subscriptions
+CREATE POLICY "Users can create their own subscriptions" 
+ON user_subscriptions FOR INSERT 
+WITH CHECK (auth.uid() = user_id);
+
+-- Create policy to allow users to update their own subscriptions
+CREATE POLICY "Users can update their own subscriptions" 
+ON user_subscriptions FOR UPDATE
+USING (auth.uid() = user_id);
+
+-- Create index for better performance
+CREATE INDEX IF NOT EXISTS idx_user_subscriptions_user_id ON user_subscriptions(user_id);

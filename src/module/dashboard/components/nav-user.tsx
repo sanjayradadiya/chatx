@@ -3,6 +3,7 @@ import {
   Moon,
   Sun,
   User,
+  CreditCard
 } from "lucide-react"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -91,6 +92,12 @@ export function NavUser() {
                 <Link to="/profile">
                   <User className="mr-2 h-4 w-4" />
                   Profile
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/subscription">
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Subscription
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSub>
