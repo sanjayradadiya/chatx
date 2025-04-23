@@ -145,6 +145,29 @@ export const useSubscription = () => {
     }
   }, [currentUser]);
 
+  /**
+   * Handle removing the plan
+   */
+  const handleRemovePlan = useCallback(async () => {
+    if (!currentUser) {
+      toast.error("You must be logged in to remove a plan");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await subscriptionService.updateUserSubscription(currentUser.id, "FREE");
+      const subData = await subscriptionService.getUserSubscription(currentUser.id);
+      setSubscription(subData);
+      toast.success("Successfully removed the plan");
+    } catch (error) {
+      console.error("Error removing plan:", error);
+      toast.error("Failed to remove the plan");
+    } finally {
+      setLoading(false);
+    }
+  }, [currentUser]);
+
   return {
     subscription,
     loading,
@@ -152,5 +175,6 @@ export const useSubscription = () => {
     handleSubscription,
     subscribeToFreePlan,
     subscribeToPaidPlan,
+    handleRemovePlan,
   };
 }; 

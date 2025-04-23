@@ -14,6 +14,7 @@ import { useState, useRef, useMemo } from "react";
 import { toast } from "sonner";
 import { useProfileImage } from "@/module/profile/hooks/useProfileImage";
 import { Camera, Loader2 } from "lucide-react";
+import { useSubscription } from "../subscription/hooks/useSubscription";
 
 export default function Profile() {
   const { currentUser } = useAuthProvider();
@@ -23,6 +24,22 @@ export default function Profile() {
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadProfileImage, isUploading, updateProfile } = useProfileImage();
+  const { subscription, handleRemovePlan } = useSubscription();
+
+  const expirationDate = useMemo(() => {
+    if (subscription?.updatedAt) {
+      return new Date(
+        new Date(subscription.updatedAt).setMonth(
+          new Date(subscription.updatedAt).getMonth() + 1
+        )
+      ).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    }
+    return "N/A";
+  }, [subscription?.updatedAt]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,10 +111,10 @@ export default function Profile() {
             <div className="flex items-center gap-4 mb-6">
               <div className="relative group">
                 <Avatar className="h-20 w-20 ring-2 ring-offset-2 ring-offset-background transition-all duration-200 group-hover:ring-primary">
-                    <AvatarImage
-                      src={userProfile.avatarUrl}
-                      alt={userProfile.fullname || "User"}
-                    />
+                  <AvatarImage
+                    src={userProfile.avatarUrl}
+                    alt={userProfile.fullname || "User"}
+                  />
                   <AvatarFallback className="text-lg">
                     {getInitials()}
                   </AvatarFallback>
@@ -165,7 +182,11 @@ export default function Profile() {
                 </p>
               </div>
 
-              <Button className="cursor-pointer" type="submit" disabled={isUpdating}>
+              <Button
+                className="cursor-pointer"
+                type="submit"
+                disabled={isUpdating}
+              >
                 {isUpdating ? "Updating..." : "Update Profile"}
               </Button>
             </form>
@@ -178,29 +199,50 @@ export default function Profile() {
             <CardDescription>Information about your profile.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-1">
-                <div className="text-sm font-medium">Profile Created</div>
-                <div className="text-sm text-muted-foreground">
-                  {new Date(userProfile.createdAt).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+            <div className="flex space-x-4">
+              <div className="flex-1 space-y-4">
+                <div className="space-y-1">
+                  <div className="text-sm font-medium">Profile Created</div>
+                  <div className="text-sm text-muted-foreground">
+                    {new Date(userProfile.createdAt).toLocaleDateString(
+                      "en-US",
+                      {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      }
+                    )}
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <div className="text-sm font-medium">Last Sign In</div>
+                  <div className="text-sm text-muted-foreground">
+                    {new Date(
+                      userProfile.lastSignInAt || userProfile.createdAt
+                    ).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </div>
                 </div>
               </div>
-
-              <div className="space-y-1">
-                <div className="text-sm font-medium">Last Sign In</div>
-                <div className="text-sm text-muted-foreground">
-                  {new Date(
-                    userProfile.lastSignInAt || userProfile.createdAt
-                  ).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </div>
+              <div className="flex-none space-y-4">
+                <div className="text-sm font-medium">Subscription Plan</div>
+                <p className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
+                  {subscription?.planName.replace("_", " ") || "Free"}
+                </p>
+                {subscription?.planName !== "FREE" && (
+                  <>
+                    <p className="text-sm text-muted-foreground">
+                      Expires at: {expirationDate}
+                    </p>
+                    <Button variant="destructive" onClick={handleRemovePlan}>
+                      Remove Plan
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
           </CardContent>
