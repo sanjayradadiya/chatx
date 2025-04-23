@@ -8,98 +8,27 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuthProvider } from "@/context/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useState, useRef, useMemo } from "react";
-import { toast } from "sonner";
 import { useProfileImage } from "@/module/profile/hooks/useProfileImage";
 import { Camera, Loader2 } from "lucide-react";
 import { useSubscription } from "../subscription/hooks/useSubscription";
+import { SubscriptionData } from "@/config/types";
 
 export default function Profile() {
-  const { currentUser } = useAuthProvider();
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [fullName, setFullName] = useState<string>(
-    currentUser?.user_metadata?.fullname || ""
-  );
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { uploadProfileImage, isUploading, updateProfile } = useProfileImage();
   const { subscription, handleRemovePlan } = useSubscription();
-
-  const expirationDate = useMemo(() => {
-    if (subscription?.updatedAt) {
-      return new Date(
-        new Date(subscription.updatedAt).setMonth(
-          new Date(subscription.updatedAt).getMonth() + 1
-        )
-      ).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "long",
-        day: "numeric",
-      });
-    }
-    return "N/A";
-  }, [subscription?.updatedAt]);
-
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      setIsUpdating(true);
-      const { error } = await updateProfile({ fullname: fullName });
-      if (error) throw error;
-      toast.success("Profile updated successfully", {
-        position: "top-center",
-      });
-    } catch (error: unknown) {
-      const errorMessage =
-      error instanceof Error ? error.message : "Error updating profile";
-      toast.error(errorMessage, {
-        position: "top-center",
-      });
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const { error, url } = await uploadProfileImage(file);
-
-    if (error) {
-      toast.error(error, {
-        position: "top-center",
-      });
-      return;
-    }
-
-    if (url) {
-      toast.success("Profile image updated successfully", {
-        position: "top-center",
-      });
-    }
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
-  const getInitials = () => {
-    const name = currentUser?.user_metadata?.fullname || "";
-    return name.charAt(0) + (name.split(" ")[1]?.charAt(0) || "");
-  };
-
-  const userProfile = useMemo(() => {
-    return {
-      avatarUrl: currentUser?.user_metadata?.avatar_url,
-      fullname: currentUser?.user_metadata?.fullname,
-      email: currentUser?.email,
-      createdAt: currentUser?.created_at || "",
-      lastSignInAt: currentUser?.last_sign_in_at || "",
-    };
-  }, [currentUser]);
+  const {
+    getInitials,
+    triggerFileInput,
+    handleImageUpload,
+    handleUpdateProfile,
+    setFullName,
+    isUploading,
+    userProfile,
+    fullName,
+    isUpdating,
+    fileInputRef,
+    expirationDate,
+  } = useProfileImage(subscription as SubscriptionData);
 
   return (
     <div className="container mx-auto py-6 max-w-3xl">

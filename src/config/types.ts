@@ -28,3 +28,12 @@ export interface ChatMessage {
   is_ai: boolean;
   created_at: string;
 }
+
+export interface SubscriptionData {
+  id: string;
+  userId: string;
+  planName: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

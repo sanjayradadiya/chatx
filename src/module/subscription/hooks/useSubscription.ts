@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState, useRef } from "react";
 import { useAuthProvider } from "@/context/auth-provider";
-import { SubscriptionData, subscriptionService } from "@/services/subscription-service";
+import { subscriptionService } from "@/services/subscription-service";
 import { loadStripe } from "@stripe/stripe-js";
 import { APP_CONFIG } from "@/config/config";
 import { toast } from "sonner";
 import { useLocation } from "react-router";
+import { SubscriptionData } from "@/config/types";
 
 export const useSubscription = () => {
   const { currentUser } = useAuthProvider();
