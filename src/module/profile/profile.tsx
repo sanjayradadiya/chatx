@@ -48,11 +48,15 @@ export default function Profile() {
       setIsUpdating(true);
       const { error } = await updateProfile({ fullname: fullName });
       if (error) throw error;
-      toast.success("Profile updated successfully");
+      toast.success("Profile updated successfully", {
+        position: "top-center",
+      });
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Error updating profile";
-      toast.error(errorMessage);
+      error instanceof Error ? error.message : "Error updating profile";
+      toast.error(errorMessage, {
+        position: "top-center",
+      });
     } finally {
       setIsUpdating(false);
     }

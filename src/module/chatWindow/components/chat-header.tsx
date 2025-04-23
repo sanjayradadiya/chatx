@@ -28,13 +28,19 @@ export function ChatHeader() {
       const success = await deleteChatSession(currentSession.id);
       if (success) {
         navigate('/dashboard');
-        toast.success("Chat deleted successfully");
+        toast.success("Chat deleted successfully", {
+          position: "top-center",
+        });
       } else {
-        toast.error("Failed to delete chat");
+        toast.error("Failed to delete chat", {
+          position: "top-center",
+        });
       }
     } catch (error) {
       console.error("Error deleting chat:", error);
-      toast.error("An error occurred while deleting the chat");
+      toast.error("An error occurred while deleting the chat", {
+        position: "top-center",
+      });
     }
   };
 

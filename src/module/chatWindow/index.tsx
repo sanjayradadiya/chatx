@@ -118,7 +118,9 @@ const ChatWindow = () => {
         };
         reader.readAsDataURL(file);
       } else {
-        toast.error('Please select an image file');
+        toast.error('Please select an image file', {
+          position: "top-center",
+        });
       }
     }
   };

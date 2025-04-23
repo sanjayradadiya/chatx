@@ -59,11 +59,15 @@ export const useSubscription = () => {
         const subData = await subscriptionService.getUserSubscription(currentUser.id);
         setSubscription(subData);
         
-        toast.success(`Successfully subscribed to the ${plan.replace('_', ' ')} plan`);
+        toast.success(`Successfully subscribed to the ${plan.replace('_', ' ')} plan`, {
+          position: "top-center",
+        });
         setProcessed(true);
       } catch (error) {
         console.error("Error handling subscription success:", error);
-        toast.error("Failed to update subscription");
+        toast.error("Failed to update subscription", {
+          position: "top-center",
+        });
       } finally {
         setLoading(false);
       }
@@ -89,7 +93,9 @@ export const useSubscription = () => {
    */
   const subscribeToFreePlan = useCallback(async () => {
     if (!currentUser) {
-      toast.error("You must be logged in to subscribe");
+      toast.error("You must be logged in to subscribe", {
+        position: "top-center",
+      });
       return;
     }
 
@@ -98,10 +104,14 @@ export const useSubscription = () => {
       await subscriptionService.updateUserSubscription(currentUser.id, "FREE");
       const subData = await subscriptionService.getUserSubscription(currentUser.id);
       setSubscription(subData);
-      toast.success("Successfully subscribed to the Free plan");
+      toast.success("Successfully subscribed to the Free plan", {
+        position: "top-center",
+      });
     } catch (error) {
       console.error("Error subscribing to free plan:", error);
-      toast.error("Failed to subscribe to the Free plan");
+      toast.error("Failed to subscribe to the Free plan", {
+        position: "top-center",
+      });
     } finally {
       setLoading(false);
     }
@@ -113,7 +123,9 @@ export const useSubscription = () => {
    */
   const subscribeToPaidPlan = useCallback(async (planName: string) => {
     if (!currentUser) {
-      toast.error("You must be logged in to subscribe");
+      toast.error("You must be logged in to subscribe", {
+        position: "top-center",
+      });
       return;
     }
 
@@ -140,7 +152,9 @@ export const useSubscription = () => {
       window.location.href = checkoutUrl;
     } catch (error) {
       console.error("Error subscribing to paid plan:", error);
-      toast.error("Failed to initiate checkout");
+      toast.error("Failed to initiate checkout", {
+        position: "top-center",
+      });
       setLoading(false);
     }
   }, [currentUser]);
@@ -150,7 +164,9 @@ export const useSubscription = () => {
    */
   const handleRemovePlan = useCallback(async () => {
     if (!currentUser) {
-      toast.error("You must be logged in to remove a plan");
+      toast.error("You must be logged in to remove a plan", {
+        position: "top-center",
+      });
       return;
     }
 
@@ -159,10 +175,14 @@ export const useSubscription = () => {
       await subscriptionService.updateUserSubscription(currentUser.id, "FREE");
       const subData = await subscriptionService.getUserSubscription(currentUser.id);
       setSubscription(subData);
-      toast.success("Successfully removed the plan");
+      toast.success("Successfully removed the plan", {
+        position: "top-center",
+      });
     } catch (error) {
       console.error("Error removing plan:", error);
-      toast.error("Failed to remove the plan");
+      toast.error("Failed to remove the plan", {
+        position: "top-center",
+      });
     } finally {
       setLoading(false);
     }
