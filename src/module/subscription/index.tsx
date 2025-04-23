@@ -1,7 +1,8 @@
-import { SUBSCRIPTION_PLANS } from "@/services/subscription-service";
+
 import { useSubscription } from "@/module/subscription/hooks/useSubscription";
 import { useAuthProvider } from "@/context/auth-provider";
 import { SubscriptionCard } from "./components/subscription-card";
+import { SUBSCRIPTION_PLANS } from "@/config/constant";
 
 const Subscription = () => {
   const { currentUser } = useAuthProvider();

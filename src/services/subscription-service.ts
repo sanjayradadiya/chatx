@@ -1,54 +1,10 @@
 import supabaseClient from "./supabase/client";
 import { APP_CONFIG } from "@/config/config";
+import { SUBSCRIPTION_PLANS } from "@/config/constant";
+import { SubscriptionData } from "@/config/types";
 import Stripe from "stripe";
 
 const stripe = new Stripe(APP_CONFIG.STRIPE_SECRET_KEY as string);
-
-export type SubscriptionPlan = {
-  name: string;
-  price: number;
-  description: string;
-  features: string[];
-  priceId?: string;
-};
-
-export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlan> = {
-  FREE: {
-    name: "Free",
-    price: 0,
-    description: "Basic plan for casual use",
-    features: ["5 chats per day", "Basic AI responses", "Standard support"],
-  },
-  PRO_BASIC: {
-    name: "Pro Basic",
-    price: 9.99,
-    description: "Great for regular users",
-    features: ["Unlimited chats", "Priority support", "Advanced AI responses"],
-    priceId: "price_test_pro_basic",
-  },
-  PRO_PLUS: {
-    name: "Pro Plus",
-    price: 19.99,
-    description: "Premium experience for power users",
-    features: [
-      "Unlimited chats",
-      "Premium support",
-      "Advanced AI responses",
-      "Custom chat templates",
-      "Data export",
-    ],
-    priceId: "price_test_pro_plus",
-  },
-};
-
-export interface SubscriptionData {
-  id: string;
-  userId: string;
-  planName: string;
-  active: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export const subscriptionService = {
   /**

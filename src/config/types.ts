@@ -37,3 +37,11 @@ export interface SubscriptionData {
   createdAt: string;
   updatedAt: string;
 }
+
+export type SubscriptionPlan = {
+  name: string;
+  price: number;
+  description: string;
+  features: string[];
+  priceId?: string;
+};
