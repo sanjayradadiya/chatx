@@ -45,43 +45,14 @@ const ChatWindow = () => {
 
   // Scroll to bottom when messages change or streaming happens
   useEffect(() => {
-    const scrollToBottom = () => {
-      if (scrollAreaRef.current && shouldScrollRef.current) {
-        const scrollArea = scrollAreaRef.current;
-        scrollArea.scrollTop = scrollArea.scrollHeight;
+      if (scrollAreaRef.current) {
+       scrollAreaRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+        inline: 'nearest'
+       });
       }
-    };
-
-    // When streaming, we want to scroll to the bottom as the message grows
-    if (isStreaming) {
-      scrollToBottom();
-    }
-
-    // Immediate scroll
-    scrollToBottom();
-    
-    // Add a small delay to ensure content is fully rendered
-    const timeoutId = setTimeout(scrollToBottom, 500);
-    
-    // Add a mutation observer to detect height changes
-    if (scrollAreaRef.current) {
-      const observer = new MutationObserver(scrollToBottom);
-      
-      observer.observe(scrollAreaRef.current, { 
-        childList: true, 
-        subtree: true,
-        characterData: true,
-        attributes: true
-      });
-      
-      return () => {
-        observer.disconnect();
-        clearTimeout(timeoutId);
-      };
-    }
-    
-    return () => clearTimeout(timeoutId);
-  }, [messages, loading, id, isStreaming, streamingMessage]); // Added streaming dependencies
+  }, [messages, id, streamingMessage]); // Added streaming dependencies
 
   // Function to generate a chat title based on the first user message
   const generateChatTitle = async (userMessage: string) => {
@@ -106,9 +77,6 @@ const ChatWindow = () => {
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Ensure we should scroll to bottom after sending a message
-    shouldScrollRef.current = true;
     
     if (selectedFile) {
       await sendImageMessage(selectedFile, input);
@@ -167,15 +135,6 @@ const ChatWindow = () => {
     }
   };
 
-  // Handle scroll events to determine whether to auto-scroll
-  const handleScroll = () => {
-    if (scrollAreaRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = scrollAreaRef.current;
-      // If we're within 100px of the bottom, enable auto-scrolling
-      shouldScrollRef.current = scrollHeight - scrollTop - clientHeight < 100;
-    }
-  };
-
   // Function to render messages based on their type
   const renderMessage = (msg: ChatMessage) => {
     if (msg.message_type === 'image' && msg.file_url) {
@@ -205,13 +164,9 @@ const ChatWindow = () => {
   }, [currentUser]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full" ref={scrollAreaRef} >
       {/* Chat messages */}
-      <div 
-        className="flex-1 overflow-auto p-4" 
-        ref={scrollAreaRef}
-        onScroll={handleScroll}
-      >
+      <div className="flex-1 overflow-auto p-4" >
         <div className="flex flex-col gap-4">
           {messages.length === 0 && !isStreaming ? (
             <div className="flex flex-col items-center justify-center h-48 gap-4 text-center">
