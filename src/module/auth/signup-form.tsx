@@ -14,7 +14,7 @@ export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { signUpNewUser } = useAuth();
+  const { signUpNewUser, signInWithAuthProvider } = useAuth();
   const {
     register,
     handleSubmit,
@@ -58,7 +58,7 @@ export function SignUpForm({
               <Button type="submit" className="w-full cursor-pointer">
                 SignUp
               </Button>
-              <AuthOptions />
+              <AuthOptions signInWithAuthProvider={signInWithAuthProvider} />
               <div className="text-center text-sm">
                 Already have an account? 
                 <Link to="/login" className="underline underline-offset-4 pl-1">

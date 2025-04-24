@@ -14,7 +14,7 @@ const LoginForm = ({
   className,
   ...props
 }: React.ComponentProps<"div">) => {
-  const { signInWithEmail } = useAuth();
+  const { signInWithEmail, signInWithAuthProvider } = useAuth();
 
   const {
     register,
@@ -58,7 +58,7 @@ const LoginForm = ({
               <Button type="submit" className="w-full cursor-pointer">
                 Login
               </Button>
-              <AuthOptions />
+              <AuthOptions signInWithAuthProvider={signInWithAuthProvider} />
               <div className="text-center text-sm">
                 Don&apos;t have an account?
                 <Link to="/signup" className="underline underline-offset-4 pl-1">

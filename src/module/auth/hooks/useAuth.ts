@@ -1,6 +1,7 @@
 import { LoginFormInput, SignUpFormInput } from "@/config/types";
 import { useAuthProvider } from "@/context/auth-provider";
 import { authService } from "@/services/auth-service";
+import { Provider } from "@supabase/supabase-js";
 import { useCallback, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner"
@@ -43,9 +44,23 @@ const useAuth = () => {
     }
   }, []);
 
+  const signInWithAuthProvider = useCallback(async (authProvider: Provider) => {
+    const { data,  error } = await authService.signInWithAuthProvider(authProvider);
+    
+    if (error) {
+      toast(error.message, {
+        position: "top-center"
+      })
+    } else {
+      console.log("After sign in with auth provider ==>", data);
+      navigate('/dashboard');
+    }
+  }, []);
+
   return {
     signInWithEmail,
     signUpNewUser,
+    signInWithAuthProvider
   };
 };
 
