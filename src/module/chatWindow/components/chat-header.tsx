@@ -1,49 +1,12 @@
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useChatContext } from "@/context/chat-context";
-import { MessageSquare, Trash2 } from "lucide-react";
-import { Link, useNavigate } from "react-router";
-import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
+import { MessageSquare } from "lucide-react";
+import { Link } from "react-router";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function ChatHeader() {
-  const { currentSession, deleteChatSession } = useChatContext();
-  const navigate = useNavigate();
-
-  const handleDeleteChat = async () => {
-    if (!currentSession?.id) return;
-    
-    try {
-      const success = await deleteChatSession(currentSession.id);
-      if (success) {
-        navigate('/dashboard');
-        toast.success("Chat deleted successfully", {
-          position: "top-center",
-        });
-      } else {
-        toast.error("Failed to delete chat", {
-          position: "top-center",
-        });
-      }
-    } catch (error) {
-      console.error("Error deleting chat:", error);
-      toast.error("An error occurred while deleting the chat", {
-        position: "top-center",
-      });
-    }
-  };
+  const { currentSession } = useChatContext();
 
   return (
     <header className="sticky top-0 flex h-16 items-center gap-2 border-b bg-background px-4 z-10">
@@ -64,35 +27,6 @@ export function ChatHeader() {
         
         <div className="flex items-center gap-1">
           <ThemeToggle />
-          
-          {currentSession && (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-destructive hover:bg-destructive/10"
-                  aria-label="Delete chat"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Delete chat</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    Are you sure you want to delete this chat? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteChat} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                    Delete
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
         </div>
       </div>
     </header>

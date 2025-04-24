@@ -1,15 +1,29 @@
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useChatContext } from "@/context/chat-context";
-import { MessagesSquare, Plus } from "lucide-react";
-import { useEffect } from "react";
+import { MessagesSquare, Plus, Trash2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function ChatList() {
-  const { chatSessions, fetchChatSessions, createNewChat, isNewChatSession } =
+  const { chatSessions, fetchChatSessions, createNewChat, isNewChatSession, deleteChatSession } =
     useChatContext();
   const navigate = useNavigate();
   const { id } = useParams();
+  const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
+  const [chatToDelete, setChatToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchChatSessions();
@@ -19,6 +33,33 @@ export function ChatList() {
     const newSession = await createNewChat();
     if (newSession) {
       navigate(`/chat/${newSession.id}`);
+    }
+  };
+
+  const handleDeleteChat = async () => {
+    if (!chatToDelete) return;
+    
+    try {
+      const success = await deleteChatSession(chatToDelete);
+      if (success) {
+        if (chatToDelete === id) {
+          navigate('/dashboard');
+        }
+        toast.success("Chat deleted successfully", {
+          position: "top-center",
+        });
+      } else {
+        toast.error("Failed to delete chat", {
+          position: "top-center",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting chat:", error);
+      toast.error("An error occurred while deleting the chat", {
+        position: "top-center",
+      });
+    } finally {
+      setChatToDelete(null);
     }
   };
 
@@ -49,17 +90,57 @@ export function ChatList() {
             </p>
           ) : (
             chatSessions.map((chat) => (
-              <Button
-                key={chat.id}
-                variant={chat.id === id ? "secondary" : "ghost"}
-                asChild
-                className="w-full justify-start"
+              <div 
+                key={chat.id} 
+                className="relative group flex items-center"
+                onMouseEnter={() => setHoveredChatId(chat.id)}
+                onMouseLeave={() => setHoveredChatId(null)}
               >
-                <Link to={`/chat/${chat.id}`}>
-                  <MessagesSquare className="mr-2 h-4 w-4" />
-                  {chat.title}
-                </Link>
-              </Button>
+                <Button
+                  variant={chat.id === id ? "secondary" : "ghost"}
+                  asChild
+                  className="w-full justify-start"
+                >
+                  <Link to={`/chat/${chat.id}`}>
+                    <MessagesSquare className="mr-1 h-4 w-4" />
+                    {chat.title.length > 20 ? `${chat.title.substring(0, 18)}...` : chat.title}
+                  </Link>
+                </Button>
+                
+                {hoveredChatId === chat.id && (
+                  <div 
+                    className="absolute right-0.5 top-1/2 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <AlertDialog open={chatToDelete === chat.id} onOpenChange={(open) => !open && setChatToDelete(null)}>
+                      <AlertDialogTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          aria-label="Delete chat"
+                          onClick={() => setChatToDelete(chat.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete chat</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this chat? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteChat} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                )}
+              </div>
             ))
           )}
         </div>
