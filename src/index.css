@@ -41,6 +41,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
+/* Base theme variables */
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
@@ -109,6 +110,27 @@
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* Color theme style transitions */
+:root,
+.dark {
+  --theme-transition: 0.3s ease;
+  --primary-transition: var(--theme-transition);
+  --secondary-transition: var(--theme-transition);
+  --accent-transition: var(--theme-transition);
+  --ring-transition: var(--theme-transition);
+  transition: 
+    --primary var(--primary-transition),
+    --primary-foreground var(--primary-transition),
+    --secondary var(--secondary-transition),
+    --secondary-foreground var(--secondary-transition),
+    --accent var(--accent-transition),
+    --accent-foreground var(--accent-transition),
+    --ring var(--ring-transition);
+}
+
+/* Color themes are dynamically applied via the theme provider's JS */
+/* This is necessary to ensure correct theme application and transitions */
 
 @layer base {
   * {

@@ -7,7 +7,11 @@ import { ThemeProvider } from "./context/theme-provider";
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="system" storageKey="chatx-ui-theme">
+    <ThemeProvider 
+      defaultTheme="system" 
+      defaultColorScheme="default" 
+      storageKey="chatx-ui-theme"
+    >
       <BrowserRouter>
         <AuthProvider>
           <ChatProvider>
