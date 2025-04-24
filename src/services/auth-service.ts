@@ -1,6 +1,6 @@
 import { LoginFormInput, SignUpFormInput } from "@/config/types";
 import supabaseClient from "./supabase/client";
-import { Session } from "@supabase/supabase-js";
+import { Provider, Session } from "@supabase/supabase-js";
 
 /**
  * Authentication service for managing user authentication
@@ -79,6 +79,16 @@ export const authService = {
   async updateUserProfile(userData: { fullname?: string, avatar_url?: string }) {
     return await supabaseClient.auth.updateUser({
       data: userData
+    });
+  },
+  /**
+   * Sign in a user with Google
+   * @param authProvider The authentication provider to use
+   * @returns Result of the sign-in operation
+   */
+  async signInWithAuthProvider(authProvider: Provider) {
+    return await supabaseClient.auth.signInWithOAuth({
+      provider: authProvider,
     });
   }
 };
