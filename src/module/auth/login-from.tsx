@@ -14,12 +14,14 @@ const LoginForm = ({
   className,
   ...props
 }: React.ComponentProps<"div">) => {
-  const { signInWithEmail, signInWithAuthProvider } = useAuth();
-
+  
   const {
     register,
     handleSubmit,
+    reset,
   } = useForm<LoginFormInput>();
+  
+  const { signInWithEmail, signInWithAuthProvider } = useAuth(reset);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
