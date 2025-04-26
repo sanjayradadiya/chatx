@@ -90,7 +90,7 @@ export const authService = {
     return await supabaseClient.auth.signInWithOAuth({
       provider: authProvider,
       options: {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: `${window.location.origin}/dashboard`,
       },
     });
   }
