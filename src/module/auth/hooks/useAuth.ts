@@ -7,7 +7,7 @@ import { useNavigate } from "react-router";
 import { toast } from "sonner"
 
 
-const useAuth = () => {
+const useAuth = (reset: () => void) => {
   const navigate = useNavigate()
   const { session } = useAuthProvider()
 
@@ -41,8 +41,9 @@ const useAuth = () => {
       toast("Check your email for verification link", {
         position: "top-center"
       });
+      reset();
     }
-  }, []);
+  }, [reset]);
 
   const signInWithAuthProvider = useCallback(async (authProvider: Provider) => {
     const { data,  error } = await authService.signInWithAuthProvider(authProvider);

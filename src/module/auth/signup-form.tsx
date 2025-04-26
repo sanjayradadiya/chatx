@@ -14,11 +14,12 @@ export function SignUpForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { signUpNewUser, signInWithAuthProvider } = useAuth();
   const {
     register,
     handleSubmit,
+    reset,
   } = useForm<SignUpFormInput>();
+  const { signUpNewUser, signInWithAuthProvider } = useAuth(reset);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
