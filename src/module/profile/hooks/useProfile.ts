@@ -8,20 +8,20 @@ import { SubscriptionData } from '@/config/types';
 
 const STORAGE_BUCKET = 'profile-images';
 
-export function useProfileImage(subscription: SubscriptionData) {
+export function useProfile(subscription: SubscriptionData) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const { currentUser, setCurrentUser } = useAuthProvider();
   const [isUpdating, setIsUpdating] = useState(false);
   const [fullName, setFullName] = useState<string>(
-    currentUser?.user_metadata?.fullname || ""
+    currentUser?.user_metadata?.full_name || ""
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const userProfile = useMemo(() => {
     return {
       avatarUrl: currentUser?.user_metadata?.avatar_url,
-      fullname: currentUser?.user_metadata?.fullname,
+      full_name: currentUser?.user_metadata?.full_name,
       email: currentUser?.email,
       createdAt: currentUser?.created_at || "",
       lastSignInAt: currentUser?.last_sign_in_at || "",
@@ -99,7 +99,7 @@ export function useProfileImage(subscription: SubscriptionData) {
     }
   };
 
-  const updateProfile = useCallback(async (userData: { fullname?: string }) => {
+  const updateProfile = useCallback(async (userData: { full_name?: string }) => {
     try {
       const { data, error } = await authService.updateUserProfile(userData);
       if (error) throw error;
@@ -115,7 +115,7 @@ export function useProfileImage(subscription: SubscriptionData) {
 
     try {
       setIsUpdating(true);
-      const { error } = await updateProfile({ fullname: fullName });
+      const { error } = await updateProfile({ full_name: fullName });
       if (error) throw error;
       toast.success("Profile updated successfully", {
         position: "top-center",
@@ -156,7 +156,7 @@ export function useProfileImage(subscription: SubscriptionData) {
   };
 
   const getInitials = () => {
-    const name = currentUser?.user_metadata?.fullname || "";
+    const name = currentUser?.user_metadata?.full_name || "";
     return name.charAt(0) + (name.split(" ")[1]?.charAt(0) || "");
   };
 
