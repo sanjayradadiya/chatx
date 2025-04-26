@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form"
 import image from '../../assets/Image.jpeg';
 import { Link } from "react-router"
 import AuthOptions from "./components/auth-options"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
 
 export function SignUpForm({
   className,
@@ -74,8 +74,9 @@ export function SignUpForm({
                   </button>
                 </div>
               </div>
-              <Button type="submit" className="w-full cursor-pointer" loading={loading} disabled={loading}>
+              <Button type="submit" className="w-full cursor-pointer" disabled={loading}>
                 SignUp
+                {loading && <Loader2 className="animate-spin" />}
               </Button>
               <AuthOptions signInWithAuthProvider={signInWithAuthProvider} />
               <div className="text-center text-sm">
