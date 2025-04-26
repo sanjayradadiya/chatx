@@ -32,11 +32,11 @@ export function SignUpForm({
               <div className="grid gap-2">
                 <Label htmlFor="email">Full Name</Label>
                 <Input
-                  id="fullname"
+                  id="full_name"
                   type="text"
                   placeholder="Chat User"
                   required
-                  {...register("fullname")}
+                  {...register("full_name")}
                 />
               </div>
               <div className="grid gap-2">

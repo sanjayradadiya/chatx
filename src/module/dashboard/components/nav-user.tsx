@@ -31,13 +31,13 @@ export function NavUser() {
   const userProfile = useMemo(() => {
     return {
       avatarUrl: currentUser?.user_metadata.avatar_url,
-      fullname: currentUser?.user_metadata.fullname,
+      full_name: currentUser?.user_metadata.full_name,
       email: currentUser?.email,
     };
   }, [currentUser]);
   
   const getInitials = useCallback(() => {
-    const name = userProfile.fullname || "";
+    const name = userProfile.full_name || "";
     return name.charAt(0) + (name.split(" ")[1]?.charAt(0) || "");
   }, [userProfile]);
 
@@ -51,11 +51,11 @@ export function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={userProfile.avatarUrl} alt={userProfile.fullname || "User"} />
+                <AvatarImage src={userProfile.avatarUrl} alt={userProfile.full_name || "User"} />
                 <AvatarFallback className="rounded-lg">{getInitials()}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{userProfile.fullname}</span>
+                <span className="truncate font-semibold">{userProfile.full_name}</span>
                 <span className="truncate text-xs">{userProfile.email}</span>
               </div>
             </SidebarMenuButton>
@@ -69,11 +69,11 @@ export function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={userProfile.avatarUrl} alt={userProfile.fullname || "User"} />
+                  <AvatarImage src={userProfile.avatarUrl} alt={userProfile.full_name || "User"} />
                   <AvatarFallback className="rounded-lg">{getInitials()}</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">{userProfile.fullname}</span>
+                  <span className="truncate font-semibold">{userProfile.full_name}</span>
                   <span className="truncate text-xs">{userProfile.email}</span>
                 </div>
               </div>

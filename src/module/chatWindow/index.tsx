@@ -160,7 +160,7 @@ const ChatWindow = () => {
   const userProfile = useMemo(() => {
     return {
       avatarUrl: currentUser?.user_metadata.avatar_url,
-      fullname: currentUser?.user_metadata.fullname,
+      full_name: currentUser?.user_metadata.full_name,
       email: currentUser?.email,
     };
   }, [currentUser]);
@@ -210,7 +210,7 @@ const ChatWindow = () => {
                     <Avatar className="h-9 w-9">
                       <AvatarImage
                         src={userProfile.avatarUrl}
-                        alt={userProfile.fullname || "User"}
+                        alt={userProfile.full_name || "User"}
                       />
                       <AvatarFallback>Me</AvatarFallback>
                     </Avatar>

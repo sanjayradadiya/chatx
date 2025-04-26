@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useProfileImage } from "@/module/profile/hooks/useProfileImage";
+import { useProfile } from "@/module/profile/hooks/useProfile";
 import { Camera, Loader2 } from "lucide-react";
 import { useSubscription } from "../subscription/hooks/useSubscription";
 import { SubscriptionData } from "@/config/types";
@@ -28,7 +28,7 @@ export default function Profile() {
     isUpdating,
     fileInputRef,
     expirationDate,
-  } = useProfileImage(subscription as SubscriptionData);
+  } = useProfile(subscription as SubscriptionData);
 
   return (
     <div className="container mx-auto py-6 max-w-3xl">
@@ -46,7 +46,7 @@ export default function Profile() {
                 <Avatar className="h-20 w-20 ring-2 ring-offset-2 ring-offset-background transition-all duration-200 group-hover:ring-primary">
                   <AvatarImage
                     src={userProfile.avatarUrl}
-                    alt={userProfile.fullname || "User"}
+                    alt={userProfile.full_name || "User"}
                   />
                   <AvatarFallback className="text-lg">
                     {getInitials()}
@@ -83,7 +83,7 @@ export default function Profile() {
               </div>
               <div>
                 <h3 className="font-medium">
-                  {userProfile.fullname || "User"}
+                  {userProfile.full_name || "User"}
                 </h3>
                 <p className="text-sm text-muted-foreground">
                   {userProfile.email}
@@ -166,7 +166,7 @@ export default function Profile() {
                 <p className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
                   {subscription?.planName.replace("_", " ") || "Free"}
                 </p>
-                {subscription?.planName !== "FREE" && (
+                {subscription &&subscription.planName !== "FREE" && (
                   <>
                     <p className="text-sm text-muted-foreground">
                       Expires at: {expirationDate}

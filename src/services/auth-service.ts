@@ -26,7 +26,7 @@ export const authService = {
       password: userData.password,
       options: {
         data: {
-          'fullname': userData.fullname,
+          'full_name': userData.full_name,
         }
       },
     });
@@ -73,10 +73,10 @@ export const authService = {
   
   /**
    * Update the current user's profile data
-   * @param userData Profile data to update (fullname, avatar_url)
+   * @param userData Profile data to update (full_name, avatar_url)
    * @returns Result of the update operation
    */
-  async updateUserProfile(userData: { fullname?: string, avatar_url?: string }) {
+  async updateUserProfile(userData: { full_name?: string, avatar_url?: string }) {
     return await supabaseClient.auth.updateUser({
       data: userData
     });
