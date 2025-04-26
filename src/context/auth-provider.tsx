@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error("Logout error:", error.message);
     } else {
       setSession(null); 
-      navigate("/login"); // redirect to login page after logout
+      navigate("/"); // redirect to login page after logout
     }
   }, [navigate]);
 
