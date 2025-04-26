@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form"
 import image from '../../assets/Image.jpeg';
 import { Link } from "react-router"
 import AuthOptions from "./components/auth-options"
+import { Eye, EyeOff } from "lucide-react"
 
 const LoginForm = ({
   className,
@@ -20,8 +21,8 @@ const LoginForm = ({
     handleSubmit,
     reset,
   } = useForm<LoginFormInput>();
-  
-  const { signInWithEmail, signInWithAuthProvider } = useAuth(reset);
+
+  const { signInWithEmail, signInWithAuthProvider, setShowPassword, showPassword, loading } = useAuth(reset);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -55,9 +56,28 @@ const LoginForm = ({
                     Forgot your password?
                   </Link>
                 </div>
-                <Input id="password" type="password" placeholder="Password" required {...register("password")} />
+                <div className="relative">
+                  <Input 
+                    id="password" 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="Password" 
+                    required 
+                    {...register("password")} 
+                  />
+                  <button 
+                    type="button" 
+                    className="absolute right-3 top-1/2 -translate-y-1/2" 
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
               </div>
-              <Button type="submit" className="w-full cursor-pointer">
+              <Button type="submit" className="w-full cursor-pointer"  loading={loading} disabled={loading}>
                 Login
               </Button>
               <AuthOptions signInWithAuthProvider={signInWithAuthProvider} />

@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form"
 import image from '../../assets/Image.jpeg';
 import { Link } from "react-router"
 import AuthOptions from "./components/auth-options"
+import { Eye, EyeOff } from "lucide-react"
 
 export function SignUpForm({
   className,
@@ -19,7 +20,7 @@ export function SignUpForm({
     handleSubmit,
     reset,
   } = useForm<SignUpFormInput>();
-  const { signUpNewUser, signInWithAuthProvider } = useAuth(reset);
+  const { signUpNewUser, signInWithAuthProvider, setShowPassword, showPassword, loading } = useAuth(reset);
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
@@ -51,12 +52,29 @@ export function SignUpForm({
                 />
               </div>
               <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input 
+                    id="password" 
+                    type={showPassword ? "text" : "password"} 
+                    placeholder="Password" 
+                    required 
+                    {...register("password")} 
+                  />
+                  <button 
+                    type="button" 
+                    className="absolute right-3 top-1/2 -translate-y-1/2" 
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <Eye className="w-4 h-4" />
+                    ) : (
+                      <EyeOff className="w-4 h-4" />
+                    )}
+                  </button>
                 </div>
-                <Input id="password" type="password" placeholder="Password" required {...register("password")} />
               </div>
-              <Button type="submit" className="w-full cursor-pointer">
+              <Button type="submit" className="w-full cursor-pointer" loading={loading} disabled={loading}>
                 SignUp
               </Button>
               <AuthOptions signInWithAuthProvider={signInWithAuthProvider} />
