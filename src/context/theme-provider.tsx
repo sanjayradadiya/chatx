@@ -28,7 +28,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState);
 
 export function ThemeProvider({
   children,
-  defaultTheme = "system",
+  defaultTheme = "light",
   defaultColorScheme = "default",
   storageKey = "chatx-ui-theme",
   ...props
