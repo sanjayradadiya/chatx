@@ -12,6 +12,7 @@ import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-render
 import { aiService } from "@/services/ai-service";
 import { useAuthProvider } from "@/context/auth-provider";
 import { useForm } from "react-hook-form";
+import { useSidebar } from "@/components/ui/sidebar";
 
 interface ChatFormValues {
   message: string;
@@ -30,6 +31,9 @@ const ChatWindow = () => {
     streamingMessage,
     isStreaming 
   } = useChatContext();
+  
+  const { state: sidebarState } = useSidebar();
+  const isSidebarExpanded = sidebarState === 'expanded';
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -282,7 +286,7 @@ const ChatWindow = () => {
       </div>
 
       {/* Message input - fixed at bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white">
+      <div className={`fixed bottom-0 ${isSidebarExpanded ? 'left-64' : 'left-0'} right-0 bg-white`}>
         <div className="mx-auto max-w-4xl p-4">
           {imagePreview && (
             <div className="mb-3 relative">
