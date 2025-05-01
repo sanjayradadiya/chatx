@@ -131,8 +131,8 @@ export function ChatList() {
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleDeleteChat} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                          <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteChat} className="bg-red-300 text-destructive-foreground hover:bg-red-300/90 cursor-pointer">
                             Delete
                           </AlertDialogAction>
                         </AlertDialogFooter>
