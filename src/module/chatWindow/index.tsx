@@ -13,6 +13,11 @@ import { toast } from "sonner";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
 import { aiService } from "@/services/ai-service";
 import { useAuthProvider } from "@/context/auth-provider";
+import { useForm } from "react-hook-form";
+
+interface ChatFormValues {
+  message: string;
+}
 
 const ChatWindow = () => {
   const { id } = useParams();
@@ -27,14 +32,30 @@ const ChatWindow = () => {
     streamingMessage,
     isStreaming 
   } = useChatContext();
-  const [input, setInput] = useState("");
   const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const firstMessageSentRef = useRef<boolean>(false);
   const { currentUser } = useAuthProvider();
+  
+  const { 
+    register, 
+    handleSubmit, 
+    setValue, 
+    watch, 
+    reset,
+    formState: { isSubmitting }
+  } = useForm<ChatFormValues>({
+    defaultValues: {
+      message: ""
+    }
+  });
+  
+  const messageValue = watch("message");
+  
   useEffect(() => {
     if (id) {
       selectChatSession(id);
@@ -75,36 +96,49 @@ const ChatWindow = () => {
     }
   };
 
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: ChatFormValues) => {
+    if (isSending || loading || isSubmitting) return;
     
-    if (selectedFile) {
-      await sendImageMessage(selectedFile, input);
-      setSelectedFile(null);
-      setImagePreview(null);
+    // Check if there's content to send (file or non-empty message)
+    if (!selectedFile && !data.message.trim()) return;
+    
+    try {
+      setIsSending(true);
       
-      // If this is a first message in a new chat, generate title
-      if (isNewChatSession && !firstMessageSentRef.current && id) {
-       await generateChatTitle(input || "Image shared");
-      }
-    } else if (input.trim()) {
-      // Check if the message is only emojis
-      const emojiRegex = /^(\p{Emoji}|\s)+$/u;
-      const messageType: MessageType = emojiRegex.test(input) ? 'emoji' : 'text';
-      
-      // If this is a first message in a new chat, generate title
-      if (isNewChatSession && !firstMessageSentRef.current && id) {
-       await generateChatTitle(input);
-      }
+      if (selectedFile) {
+        await sendImageMessage(selectedFile, data.message);
+        setSelectedFile(null);
+        setImagePreview(null);
+        
+        // If this is a first message in a new chat, generate title
+        if (isNewChatSession && !firstMessageSentRef.current && id) {
+         await generateChatTitle(data.message || "Image shared");
+        }
+      } else if (data.message.trim()) {
+        // Check if the message is only emojis
+        const emojiRegex = /^(\p{Emoji}|\s)+$/u;
+        const messageType: MessageType = emojiRegex.test(data.message) ? 'emoji' : 'text';
+        
+        // If this is a first message in a new chat, generate title
+        if (isNewChatSession && !firstMessageSentRef.current && id) {
+         await generateChatTitle(data.message);
+        }
 
-      await sendMessage(input, messageType);
+        await sendMessage(data.message, messageType);
+      }
+      
+      // Reset the form
+      reset({ message: "" });
+    } catch (error) {
+      console.error("Error sending message:", error);
+      toast.error("Failed to send message. Please try again.");
+    } finally {
+      setIsSending(false);
     }
-    
-    setInput("");
   };
 
   const handleEmojiClick = (emojiData: EmojiClickData) => {
-    setInput(prev => prev + emojiData.emoji);
+    setValue("message", (messageValue || "") + emojiData.emoji, { shouldValidate: true });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -266,7 +300,7 @@ const ChatWindow = () => {
             </div>
           </div>
         )}
-        <form className="flex items-center gap-2" onSubmit={handleSendMessage}>
+        <form className="flex items-center gap-2" onSubmit={handleSubmit(onSubmit)}>
           <input
             type="file"
             accept="image/*"
@@ -282,7 +316,7 @@ const ChatWindow = () => {
             variant="outline" 
             size="icon" 
             onClick={handleFileButtonClick}
-            disabled={loading || !!selectedFile}
+            disabled={loading || isSending || isSubmitting || !!selectedFile}
             aria-label="Upload image"
             title="Upload image"
           >
@@ -295,7 +329,7 @@ const ChatWindow = () => {
                 type="button"
                 variant="outline"
                 size="icon"
-                disabled={loading}
+                disabled={loading || isSending || isSubmitting}
                 aria-label="Add emoji"
                 title="Add emoji"
               >
@@ -310,17 +344,16 @@ const ChatWindow = () => {
           <div className="flex-1 relative">
             <Input
               placeholder="Type a message..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={loading}
+              disabled={loading || isSending || isSubmitting}
               className="pr-10"
               aria-label="Message input"
+              {...register("message")}
             />
           </div>
 
           <Button 
             type="submit" 
-            disabled={loading || (!input.trim() && !selectedFile)}
+            disabled={loading || isSending || isSubmitting || (!messageValue?.trim() && !selectedFile)}
             size="icon"
             aria-label="Send message"
             title="Send message"
