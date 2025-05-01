@@ -197,9 +197,9 @@ const ChatWindow = () => {
   }, [currentUser]);
 
   return (
-    <div className="flex flex-col ">
+    <div className="flex flex-col">
       {/* Chat messages */}
-      <div className="flex-1 overflow-auto p-4 h-full mb-44 mx-auto max-w-4xl" ref={scrollAreaRef}>
+      <div className="flex-1 overflow-auto p-4 w-full h-full mb-44 mx-auto max-w-4xl" ref={scrollAreaRef}>
         <div className="flex flex-col gap-4">
           {messages.length === 0 && !isStreaming ? (
             <div className="flex flex-col items-center justify-center h-48 gap-4 text-center">
