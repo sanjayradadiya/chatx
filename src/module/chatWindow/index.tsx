@@ -4,11 +4,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useParams } from "react-router";
 import { useChatContext } from "@/context/chat-context";
-import { Bot, Smile, X, Paperclip, Send } from "lucide-react";
+import { Bot, X, Paperclip, Send } from "lucide-react";
 import { TypingIndicator } from "./components/typing-indicator";
 import { MessageType, ChatMessage } from "@/config/types";
-import EmojiPicker, { EmojiClickData } from 'emoji-picker-react';
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { toast } from "sonner";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
 import { aiService } from "@/services/ai-service";
@@ -32,7 +30,7 @@ const ChatWindow = () => {
     streamingMessage,
     isStreaming 
   } = useChatContext();
-  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
@@ -43,8 +41,7 @@ const ChatWindow = () => {
   
   const { 
     register, 
-    handleSubmit, 
-    setValue, 
+    handleSubmit,
     watch, 
     reset,
     formState: { isSubmitting }
@@ -135,10 +132,6 @@ const ChatWindow = () => {
     } finally {
       setIsSending(false);
     }
-  };
-
-  const handleEmojiClick = (emojiData: EmojiClickData) => {
-    setValue("message", (messageValue || "") + emojiData.emoji, { shouldValidate: true });
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -322,24 +315,6 @@ const ChatWindow = () => {
           >
             <Paperclip className="h-4 w-4" />
           </Button>
-
-          <Popover open={isEmojiPickerOpen} onOpenChange={setIsEmojiPickerOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                disabled={loading || isSending || isSubmitting}
-                aria-label="Add emoji"
-                title="Add emoji"
-              >
-                <Smile className="h-4 w-4" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-full p-0 not-first:" align="start" onFocusOutside={() => setIsEmojiPickerOpen(false)}>
-              <EmojiPicker open={isEmojiPickerOpen} lazyLoadEmojis={true} onEmojiClick={handleEmojiClick} />
-            </PopoverContent>
-          </Popover>
 
           <div className="flex-1 relative">
             <Input
