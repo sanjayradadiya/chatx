@@ -4,11 +4,12 @@ import { subscriptionService } from "@/services/subscription-service";
 import { loadStripe } from "@stripe/stripe-js";
 import { APP_CONFIG } from "@/config/config";
 import { toast } from "sonner";
-import { useLocation } from "react-router";
+import { useLocation, useNavigate } from "react-router";
 import { SubscriptionData } from "@/config/types";
 
 export const useSubscription = () => {
   const { currentUser } = useAuthProvider();
+  const navigate = useNavigate();
   const [subscription, setSubscription] = useState<SubscriptionData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const location = useLocation();
@@ -189,6 +190,10 @@ export const useSubscription = () => {
     }
   }, [currentUser]);
 
+  const handleUpdatePlan = useCallback(async () => {
+      navigate("/subscription");
+  }, [navigate]);
+
   return {
     subscription,
     loading,
@@ -197,5 +202,6 @@ export const useSubscription = () => {
     subscribeToFreePlan,
     subscribeToPaidPlan,
     handleRemovePlan,
+    handleUpdatePlan,
   };
 }; 

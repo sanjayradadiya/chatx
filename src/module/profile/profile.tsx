@@ -10,12 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/module/profile/hooks/useProfile";
-import { Camera, Loader2 } from "lucide-react";
+import { Camera, Loader2, CreditCard, Calendar, Clock } from "lucide-react";
 import { useSubscription } from "../subscription/hooks/useSubscription";
 import { SubscriptionData } from "@/config/types";
 
 export default function Profile() {
-  const { subscription, handleRemovePlan } = useSubscription();
+  const { subscription, handleUpdatePlan } =
+    useSubscription();
   const {
     getInitials,
     triggerFileInput,
@@ -128,6 +129,86 @@ export default function Profile() {
 
         <Card>
           <CardHeader>
+            <CardTitle>Subscription</CardTitle>
+            <CardDescription>Manage your subscription details.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <CreditCard className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Plan</p>
+                    <p className="text-sm text-muted-foreground">
+                      {subscription?.planName.replace("_", " ") || "Free"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Calendar className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">Start Date</p>
+                    <p className="text-sm text-muted-foreground">
+                      {subscription && subscription.createdAt
+                        ? new Date(subscription.createdAt).toLocaleDateString(
+                            "en-US",
+                            {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            }
+                          )
+                        : "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-5 w-5 flex items-center justify-center">
+                    <div
+                      className={`h-2 w-2 rounded-full ${
+                        subscription && subscription.active
+                          ? "bg-green-500"
+                          : "bg-yellow-500"
+                      }`}
+                    ></div>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">Status</p>
+                    <p className="text-sm text-muted-foreground">
+                      {subscription && subscription.active
+                        ? "Active"
+                        : "Inactive"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="text-sm font-medium">End Date</p>
+                    <p className="text-sm text-muted-foreground">
+                      {expirationDate || "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {
+                <div className="md:col-span-2 pt-4 border-t">
+                  <Button onClick={handleUpdatePlan} className="cursor-pointer">
+                    Manage Subscription
+                  </Button>
+                </div>
+              }
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
             <CardTitle>Profile</CardTitle>
             <CardDescription>Information about your profile.</CardDescription>
           </CardHeader>
@@ -160,22 +241,6 @@ export default function Profile() {
                     })}
                   </div>
                 </div>
-              </div>
-              <div className="flex-none space-y-4">
-                <div className="text-sm font-medium">Subscription Plan</div>
-                <p className="text-xs font-bold text-primary bg-primary/10 px-2 py-1 rounded-md">
-                  {subscription?.planName.replace("_", " ") || "Free"}
-                </p>
-                {subscription &&subscription.planName !== "FREE" && (
-                  <>
-                    <p className="text-sm text-muted-foreground">
-                      Expires at: {expirationDate}
-                    </p>
-                    <Button variant="destructive" onClick={handleRemovePlan}>
-                      Remove Plan
-                    </Button>
-                  </>
-                )}
               </div>
             </div>
           </CardContent>
