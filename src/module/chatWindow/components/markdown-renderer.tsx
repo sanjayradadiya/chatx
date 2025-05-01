@@ -50,7 +50,7 @@ export const MarkdownRenderer = ({
           h6: (props) => <h6 className="text-sm font-bold mt-3 mb-1" {...props} />,
           
           // Paragraphs
-          p: (props) => <p className="mb-4 leading-relaxed" {...props} />,
+          p: (props) => <p className="mb-0.5 leading-relaxed" {...props} />,
           
           // Lists
           ul: (props) => <ul className="list-disc pl-8 mb-4 space-y-1" {...props} />,
