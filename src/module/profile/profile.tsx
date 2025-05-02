@@ -10,9 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/module/profile/hooks/useProfile";
-import { Camera, Loader2, CreditCard, Calendar, Clock } from "lucide-react";
+import { Camera, Loader2, CreditCard, Calendar, Clock, Info } from "lucide-react";
 import { useSubscription } from "../subscription/hooks/useSubscription";
 import { SubscriptionData } from "@/config/types";
+import { 
+  Popover,
+  PopoverContent,
+  PopoverTrigger 
+} from "@/components/ui/popover";
 
 export default function Profile() {
   const { subscription, handleUpdatePlan } =
@@ -29,6 +34,7 @@ export default function Profile() {
     isUpdating,
     fileInputRef,
     expirationDate,
+    currentPlanDetails,
   } = useProfile(subscription as SubscriptionData);
 
   return (
@@ -143,6 +149,37 @@ export default function Profile() {
                       {subscription?.planName.replace("_", " ") || "Free"}
                     </p>
                   </div>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Info className="h-5 w-5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-0" align="end">
+                      <div className="p-4 border-b">
+                        <h4 className="text-sm font-medium">{currentPlanDetails.name} Plan Details</h4>
+                        <p className="text-xs text-muted-foreground mt-1">{currentPlanDetails.description}</p>
+                      </div>
+                      <div className="p-4">
+                        <h5 className="text-xs font-medium mb-2">Features:</h5>
+                        <ul className="text-xs space-y-1.5">
+                          {currentPlanDetails.features.map((feature, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                              <div className="h-4 w-4 flex items-center justify-center mt-0.5">
+                                <div className="h-1.5 w-1.5 rounded-full bg-primary"></div>
+                              </div>
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                      {currentPlanDetails.price > 0 && (
+                        <div className="p-4 border-t bg-muted/50">
+                          <p className="text-xs">
+                            <span className="font-medium">Price:</span> ${currentPlanDetails.price}/month
+                          </p>
+                        </div>
+                      )}
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="flex items-start gap-3">

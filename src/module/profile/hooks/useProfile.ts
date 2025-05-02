@@ -5,6 +5,7 @@ import { authService } from '@/services/auth-service';
 import { useAuthProvider } from '@/context/auth-provider';
 import { toast } from 'sonner';
 import { SubscriptionData } from '@/config/types';
+import { SUBSCRIPTION_PLANS } from '@/config/constant';
 
 const STORAGE_BUCKET = 'profile-images';
 
@@ -42,6 +43,11 @@ export function useProfile(subscription: SubscriptionData) {
     }
     return "N/A";
   }, [subscription?.updatedAt]);
+
+  const currentPlanDetails = useMemo(() => {
+    if (!subscription) return SUBSCRIPTION_PLANS[0]; // Default to FREE plan
+    return SUBSCRIPTION_PLANS.find(plan => plan.type === subscription.planName) || SUBSCRIPTION_PLANS[0];
+  }, [subscription]);
 
   const uploadProfileImage = async (file: File) => {
     if (!currentUser) {
@@ -165,6 +171,7 @@ export function useProfile(subscription: SubscriptionData) {
     isUploading,
     uploadError,
     expirationDate,
+    currentPlanDetails,
     fullName,
     isUpdating,
     fileInputRef,
