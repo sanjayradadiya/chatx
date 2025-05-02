@@ -395,8 +395,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
   const incrementQuestionCount = useCallback(async (sessionId: string) => {
     if (!sessionId) return;
-
-    await chatService.incrementQuestionCount(sessionId);
+    // Update the question count in the current session
+   const updatedCount = await chatService.incrementQuestionCount(sessionId);
+   setUserQuestionCount(updatedCount);
   }, []);
 
   return (
