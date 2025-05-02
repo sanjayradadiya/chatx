@@ -41,7 +41,7 @@ export function WelcomeScreen() {
                   </p>
                   <ul className="list-disc list-inside text-muted-foreground space-y-1 ml-4">
                     <li>Send any message to start a conversation</li>
-                    <li>The AI will respond with a random message from its database</li>
+                    <li>The AI will respond with a relevant message based on your question.</li>
                     <li>Create multiple chat sessions to organize your conversations</li>
                     <li>All messages are stored in your personal history</li>
                   </ul>
