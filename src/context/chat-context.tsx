@@ -96,6 +96,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     if (!session?.user.id) return null;
 
     setLoading(true);
+    setIsNewChatSession(true); // Set to true only during creation
 
     try {
       const newSession = await chatService.createChatSession(session.user.id);
@@ -104,12 +105,13 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         setChatSessions((prev) => [newSession, ...prev]);
         setCurrentSession(newSession);
         setMessages([]);
-        setIsNewChatSession(true);
+        setIsNewChatSession(false);
       }
 
       return newSession;
     } catch (error) {
       console.error("Error creating new chat:", error);
+      setIsNewChatSession(false); // Reset if there's an error
       return null;
     } finally {
       setLoading(false);
