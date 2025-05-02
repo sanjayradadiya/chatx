@@ -102,13 +102,12 @@ export const useChat = () => {
         // Check if the message is only emojis
         const emojiRegex = /^(\p{Emoji}|\s)+$/u;
         const messageType: MessageType = emojiRegex.test(data.message) ? 'emoji' : 'text';
+        await sendMessage(data.message, messageType);
         
         // If this is a first message in a new chat, generate title
         if (!firstMessageSentRef.current && id && currentSession?.is_default_title) {
          await generateChatTitle(data.message);
         }
-
-        await sendMessage(data.message, messageType);
       }
     } catch (error) {
       console.error("Error sending message:", error);
