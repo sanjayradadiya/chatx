@@ -75,7 +75,7 @@ export function SubscriptionCard({
         </ul>
       </CardContent>
 
-      <CardFooter className="p-6 pt-0">
+      <CardFooter className={`p-6 pt-0 ${isDisplayButton ? "" : "pb-16"}`}>
         {isDisplayButton && (
           <Button
             variant={isPro ? "default" : "outline"}
