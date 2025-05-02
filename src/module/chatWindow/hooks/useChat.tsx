@@ -83,6 +83,9 @@ export const useChat = () => {
     // Check if there's content to send (file or non-empty message)
     if (!selectedFile && !data.message.trim()) return;
     
+    // Reset the form
+    reset({ message: "" });
+    
     try {
       setIsSending(true);
       
@@ -107,9 +110,6 @@ export const useChat = () => {
 
         await sendMessage(data.message, messageType);
       }
-      
-      // Reset the form
-      reset({ message: "" });
     } catch (error) {
       console.error("Error sending message:", error);
       toast.error("Failed to send message. Please try again.");
