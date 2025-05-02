@@ -21,7 +21,7 @@ const Subscription = () => {
   }
 
   return (
-    <div className="container max-w-6xl mx-auto py-12 px-4">
+    <div className="container w-full mx-auto py-12 px-4">
       <div className="text-center mb-12">
         <h1 className="text-3xl font-bold mb-2">Choose Your Plan</h1>
         <p className="text-muted-foreground">
@@ -29,7 +29,7 @@ const Subscription = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-8 justify-center">
         {SUBSCRIPTION_PLANS.map((plan) => (
           <SubscriptionCard
             key={plan.name}
