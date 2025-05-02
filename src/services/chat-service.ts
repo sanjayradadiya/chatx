@@ -1,6 +1,9 @@
 import { ChatMessage, ChatSession, MessageType } from "@/config/types";
 import supabaseClient from "./supabase/client";
 import { v4 as uuidv4 } from 'uuid';
+import { hasReachedQuestionLimit, getQuestionLimit } from "@/lib/subscription-utils";
+import { subscriptionService } from "./subscription-service";
+import { toast } from "sonner";
 
 export const chatService = {
   // Chat Sessions
@@ -51,6 +54,92 @@ export const chatService = {
     return data || [];
   },
 
+  // Increment question count for a session
+  async incrementQuestionCount(sessionId: string): Promise<number> {
+    try {
+      // Get current count
+      const { data: session, error: fetchError } = await supabaseClient
+        .from('chat_sessions')
+        .select('questions_count')
+        .eq('id', sessionId)
+        .single();
+      
+      if (fetchError) {
+        toast.error("Error fetching current question count", {
+          description: (fetchError as Error).message,
+          position: "top-center",
+        });
+        return 0;
+      }
+      
+      const currentCount = session?.questions_count || 0;
+      const newCount = currentCount + 1;
+      
+      // Update the count
+      const { error: updateError } = await supabaseClient
+        .from('chat_sessions')
+        .update({ questions_count: newCount })
+        .eq('id', sessionId);
+      
+      if (updateError) {
+        console.error("Error updating question count:", updateError);
+        return currentCount;
+      }
+      
+      return newCount;
+    } catch (error) {
+      console.error("Error in incrementQuestionCount:", error);
+      return 0;
+    }
+  },
+
+  // Validate if user can send more messages based on subscription
+  async validateMessageLimit(sessionId: string, userId: string): Promise<{
+    canSend: boolean;
+    userQuestionCount: number;
+    questionLimit: number;
+    planName?: string;
+  }> {
+    try {
+      // Get user subscription
+      const subscription = await subscriptionService.getUserSubscription(userId);
+      
+      // Get current question count from the session
+      const { data: session, error } = await supabaseClient
+        .from('chat_sessions')
+        .select('questions_count')
+        .eq('id', sessionId)
+        .single();
+      
+      if (error) {
+        toast.error("Error fetching session question count", {
+          description: (error as Error).message,
+          position: "top-center",
+        });
+        return { canSend: false, userQuestionCount: 0, questionLimit: 0 };
+      }
+      
+      const userQuestionCount = session?.questions_count || 0;
+      const hasReachedLimit = hasReachedQuestionLimit(
+        subscription?.planName,
+        userQuestionCount
+      );
+      
+      return {
+        canSend: !hasReachedLimit,
+        userQuestionCount,
+        questionLimit: getQuestionLimit(subscription?.planName),
+        planName: subscription?.planName
+      };
+    } catch (error) {
+      toast.error("Error validating message limit", {
+        description: (error as Error).message,
+        position: "top-center",
+      });
+      return { canSend: false, userQuestionCount: 0, questionLimit: 0 };
+    }
+  },
+
   // Send a text message (regular text or emoji)
   async sendUserMessage(
     sessionId: string, 
@@ -58,6 +147,16 @@ export const chatService = {
     text: string, 
     messageType: MessageType = 'text'
   ): Promise<ChatMessage | null> {
+    // Validate message limit
+    const { canSend } = await this.validateMessageLimit(sessionId, userId);
+    
+    if (!canSend) {
+      toast.error("You have reached your message limit. Please upgrade your plan to continue.", {
+        position: "top-center",
+      });
+      return null;
+    }
+    
     const { data, error } = await supabaseClient
       .from('chat_messages')
       .insert({ 
@@ -85,6 +184,16 @@ export const chatService = {
     file: File,
     caption: string = ''
   ): Promise<ChatMessage | null> {
+    // Validate message limit
+    const { canSend } = await this.validateMessageLimit(sessionId, userId);
+    
+    if (!canSend) {
+      toast.error("You have reached your message limit. Please upgrade your plan to continue.", {
+        position: "top-center",
+      });
+      return null;
+    }
+    
     try {
       // 1. Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop();

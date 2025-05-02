@@ -23,7 +23,12 @@ export const useChat = () => {
     updateChatTitle,
     streamingMessage,
     isStreaming,
-    currentSession
+    currentSession,
+    userSubscription,
+    userQuestionCount,
+    hasReachedLimit,
+    questionLimit,
+    incrementQuestionCount
   } = useChatContext();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -98,12 +103,21 @@ export const useChat = () => {
         if (!firstMessageSentRef.current && id && currentSession?.is_default_title) {
          await generateChatTitle(data.message || "Image shared");
         }
+
+        // Increment the question count after successfully sending an image message
+        if (currentSession?.id) {
+          incrementQuestionCount(currentSession.id);
+        }
       } else if (data.message.trim()) {
         // Check if the message is only emojis
         const emojiRegex = /^(\p{Emoji}|\s)+$/u;
         const messageType: MessageType = emojiRegex.test(data.message) ? 'emoji' : 'text';
         await sendMessage(data.message, messageType);
         
+        // Increment the question count after successfully sending a text message
+        if (currentSession?.id) {
+          incrementQuestionCount(currentSession.id);
+        }
         // If this is a first message in a new chat, generate title
         if (!firstMessageSentRef.current && id && currentSession?.is_default_title) {
          await generateChatTitle(data.message);
@@ -189,6 +203,10 @@ export const useChat = () => {
     scrollAreaRef,
     fileInputRef,
     userProfile,
+    userSubscription,
+    userQuestionCount,
+    hasReachedLimit,
+    questionLimit,
     renderMessage,
     handleSubmit,
     onSubmit,

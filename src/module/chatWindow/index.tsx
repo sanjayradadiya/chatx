@@ -6,7 +6,7 @@ import { TypingIndicator } from "./components/typing-indicator";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useChat } from "./hooks/useChat";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { useEffect } from "react";
 
 const ChatWindow = () => {
@@ -23,6 +23,9 @@ const ChatWindow = () => {
     scrollAreaRef,
     fileInputRef,
     userProfile,
+    hasReachedLimit,
+    questionLimit,
+    userQuestionCount,
     renderMessage,
     handleSubmit,
     onSubmit,
@@ -175,6 +178,21 @@ const ChatWindow = () => {
               </div>
             </div>
           )}
+
+          {/* Question limit indicator */}
+          {questionLimit < Infinity && (
+            <div className="mb-2 text-xs flex justify-between items-center">
+              <span className={`${hasReachedLimit ? "text-destructive font-semibold" : "text-muted-foreground"}`}>
+                {userQuestionCount} / {questionLimit}
+              </span>
+              {hasReachedLimit && (
+                <Link to="/subscription" className="text-primary font-medium hover:underline">
+                  Upgrade your plan to ask more questions
+                </Link>
+              )}
+            </div>
+          )}
+
           <form
             className="flex items-end gap-2"
             onSubmit={handleSubmit(onSubmit)}
@@ -187,15 +205,16 @@ const ChatWindow = () => {
               onChange={handleFileChange}
               id="image-upload"
               aria-label="Upload image"
+              disabled={hasReachedLimit}
             />
 
             <div className="flex-1 relative">
-              <div className="relative rounded-xl border shadow-sm bg-background overflow-hidden focus-within:ring-1 focus-within:ring-primary/50">
+              <div className={`relative rounded-xl border shadow-sm bg-background overflow-hidden focus-within:ring-1 focus-within:ring-primary/50 ${hasReachedLimit ? 'opacity-50' : ''}`}>
                 <div className="flex items-end">
                   <div className="flex-1 py-2 px-3">
                     <Input
-                      placeholder="Ask me anything..."
-                      disabled={loading || isSending || isSubmitting}
+                      placeholder={hasReachedLimit ? "Question limit reached. Upgrade your plan to continue." : "Ask me anything..."}
+                      disabled={loading || isSending || isSubmitting || hasReachedLimit}
                       className="pr-10 bg-transparent border-none shadow-none focus-visible:ring-0"
                       aria-label="Message input"
                       {...register("message")}
@@ -212,7 +231,8 @@ const ChatWindow = () => {
                           isSending ||
                           isSubmitting ||
                           !!selectedFile ||
-                          isStreaming
+                          isStreaming ||
+                          hasReachedLimit
                         }
                         aria-label="Upload image"
                         title="Upload image"
@@ -225,7 +245,7 @@ const ChatWindow = () => {
                         size="icon"
                         className={`h-8 w-8 ${
                           (!messageValue?.trim() && !selectedFile) ||
-                          isStreaming
+                          isStreaming || hasReachedLimit
                             ? "text-muted-foreground"
                             : "text-primary"
                         }`}
@@ -234,7 +254,8 @@ const ChatWindow = () => {
                           isSending ||
                           isSubmitting ||
                           (!messageValue?.trim() && !selectedFile) ||
-                          isStreaming
+                          isStreaming ||
+                          hasReachedLimit
                         }
                         aria-label="Send message"
                         title="Send message"

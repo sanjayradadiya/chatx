@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS chat_sessions (
     title TEXT NOT NULL,
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     is_default_title BOOLEAN NOT NULL DEFAULT true,
+    questions_count INTEGER NOT NULL DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT now() NOT NULL
 );
 

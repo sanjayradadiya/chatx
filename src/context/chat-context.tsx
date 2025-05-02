@@ -1,4 +1,4 @@
-import { ChatMessage, ChatSession, MessageType } from "@/config/types";
+import { ChatMessage, ChatSession, MessageType, SubscriptionData } from "@/config/types";
 import {
   createContext,
   useContext,
@@ -6,10 +6,13 @@ import {
   ReactNode,
   useCallback,
   useEffect,
+  useMemo,
 } from "react";
 import { chatService } from "@/services/chat-service";
 import { useAuthProvider } from "./auth-provider";
 import { aiService } from "@/services/ai-service";
+import { subscriptionService } from "@/services/subscription-service";
+import { hasReachedQuestionLimit, getQuestionLimit } from "@/lib/subscription-utils";
 
 interface ChatContextType {
   chatSessions: ChatSession[];
@@ -20,6 +23,10 @@ interface ChatContextType {
   isNewChatSession: boolean;
   streamingMessage: string | null;
   isStreaming: boolean;
+  userSubscription: SubscriptionData | null;
+  userQuestionCount: number;
+  hasReachedLimit: boolean;
+  questionLimit: number;
   fetchChatSessions: () => Promise<void>;
   createNewChat: () => Promise<ChatSession | null>;
   selectChatSession: (sessionId: string) => Promise<void>;
@@ -27,6 +34,7 @@ interface ChatContextType {
   sendImageMessage: (file: File, caption?: string) => Promise<void>;
   updateChatTitle: (sessionId: string, title: string) => Promise<void>;
   deleteChatSession: (sessionId: string) => Promise<boolean>;
+  incrementQuestionCount: (sessionId: string) => Promise<void>;
 }
 
 const ChatContext = createContext<ChatContextType>({
@@ -38,6 +46,10 @@ const ChatContext = createContext<ChatContextType>({
   isNewChatSession: false,
   streamingMessage: null,
   isStreaming: false,
+  userSubscription: null,
+  userQuestionCount: 0,
+  hasReachedLimit: true,
+  questionLimit: 0,
   fetchChatSessions: async () => {},
   createNewChat: async () => null,
   selectChatSession: async () => {},
@@ -45,6 +57,7 @@ const ChatContext = createContext<ChatContextType>({
   sendImageMessage: async () => {},
   updateChatTitle: async () => {},
   deleteChatSession: async () => false,
+  incrementQuestionCount: async () => {},
 });
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
@@ -58,7 +71,48 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
   const [streamingMessage, setStreamingMessage] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
+  const [userSubscription, setUserSubscription] = useState<SubscriptionData | null>(null);
+  const [userQuestionCount, setUserQuestionCount] = useState<number>(0);
   const { session } = useAuthProvider();
+
+  // Calculate if user has reached their question limit
+  const hasReachedLimit = useMemo(() => {
+    return userSubscription 
+      ? hasReachedQuestionLimit(userSubscription.planName, userQuestionCount)
+      : true;
+  },[userSubscription, userQuestionCount]);
+    
+  // Get the question limit for the user's plan
+  const questionLimit = useMemo(() => {
+    return userSubscription 
+      ? getQuestionLimit(userSubscription.planName)
+      : getQuestionLimit(undefined);
+  },[userSubscription]);
+
+  // Fetch user subscription data
+  useEffect(() => {
+    if (session?.user.id) {
+      const fetchSubscription = async () => {
+        try {
+          const subData = await subscriptionService.getUserSubscription(session.user.id);
+          setUserSubscription(subData);
+        } catch (error) {
+          console.error("Failed to fetch user subscription:", error);
+        }
+      };
+      
+      fetchSubscription();
+    }
+  }, [session?.user.id]);
+
+  // Update user question count when current session changes
+  useEffect(() => {
+    if (currentSession) {
+      setUserQuestionCount(currentSession.questions_count || 0);
+    } else {
+      setUserQuestionCount(0);
+    }
+  }, [currentSession]);
 
   // Automatically load sessions when authenticated
   useEffect(() => {
@@ -161,6 +215,17 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
       if (userMessage) {
         setMessages((prev) => [...prev, userMessage]);
+        
+        // Update question count in the current session
+        if (currentSession) {
+          const updatedCount = (currentSession.questions_count || 0) + 1;
+          setCurrentSession({
+            ...currentSession,
+            questions_count: updatedCount
+          });
+          setUserQuestionCount(updatedCount);
+        }
+        
         setIsStreaming(true);
         setStreamingMessage("");
         
@@ -217,6 +282,17 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
         if (userMessage) {
           setMessages((prev) => [...prev, userMessage]);
+          
+          // Update question count in the current session
+          if (currentSession) {
+            const updatedCount = (currentSession.questions_count || 0) + 1;
+            setCurrentSession({
+              ...currentSession,
+              questions_count: updatedCount
+            });
+            setUserQuestionCount(updatedCount);
+          }
+          
           setIsStreaming(true);
           setStreamingMessage("");
           
@@ -317,6 +393,12 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     [currentSession, session]
   );
 
+  const incrementQuestionCount = useCallback(async (sessionId: string) => {
+    if (!sessionId) return;
+
+    await chatService.incrementQuestionCount(sessionId);
+  }, []);
+
   return (
     <ChatContext.Provider
       value={{
@@ -328,6 +410,10 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         isNewChatSession,
         streamingMessage,
         isStreaming,
+        userSubscription,
+        userQuestionCount,
+        hasReachedLimit,
+        questionLimit,
         fetchChatSessions,
         createNewChat,
         selectChatSession,
@@ -335,6 +421,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         sendImageMessage,
         updateChatTitle,
         deleteChatSession,
+        incrementQuestionCount,
       }}
     >
       {children}
