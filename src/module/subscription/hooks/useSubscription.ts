@@ -6,6 +6,7 @@ import { APP_CONFIG } from "@/config/config";
 import { toast } from "sonner";
 import { useLocation, useNavigate } from "react-router";
 import { SubscriptionData } from "@/config/types";
+import { SUBSCRIPTION_PLAN } from "@/config/enum";
 
 export const useSubscription = () => {
   const { currentUser } = useAuthProvider();
@@ -82,8 +83,8 @@ export const useSubscription = () => {
    * Handle subscription
    * @param planName The name of the plan to subscribe to
    */
-  const handleSubscription = useCallback((planName: string) => {
-    if (planName === 'FREE') {
+  const handleSubscription = useCallback((planName: SUBSCRIPTION_PLAN) => {
+    if (planName === SUBSCRIPTION_PLAN.FREE) {
       subscribeToFreePlan();
     } else {
       subscribeToPaidPlan(planName);
@@ -103,7 +104,7 @@ export const useSubscription = () => {
 
     try {
       setLoading(true);
-      await subscriptionService.updateUserSubscription(currentUser.id, "FREE");
+      await subscriptionService.updateUserSubscription(currentUser.id, SUBSCRIPTION_PLAN.FREE);
       const subData = await subscriptionService.getUserSubscription(currentUser.id);
       setSubscription(subData);
       toast.success("Successfully subscribed to the Free plan", {
@@ -174,7 +175,7 @@ export const useSubscription = () => {
 
     try {
       setLoading(true);
-      await subscriptionService.updateUserSubscription(currentUser.id, "FREE");
+      await subscriptionService.updateUserSubscription(currentUser.id, SUBSCRIPTION_PLAN.FREE);
       const subData = await subscriptionService.getUserSubscription(currentUser.id);
       setSubscription(subData);
       toast.success("Successfully removed the plan", {

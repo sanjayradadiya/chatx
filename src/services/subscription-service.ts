@@ -83,7 +83,7 @@ export const subscriptionService = {
     successUrl: string,
     cancelUrl: string
   ): Promise<string> {
-    const plan = SUBSCRIPTION_PLANS.find((p) => p.name === planName);
+    const plan = SUBSCRIPTION_PLANS.find((p) => p.type === planName);
     
     if (!plan || !plan.priceId) {
       throw new Error("Invalid plan or plan does not have a price ID");

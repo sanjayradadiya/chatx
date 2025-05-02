@@ -1,3 +1,5 @@
+import { SUBSCRIPTION_PLAN } from "./enum";
+
 export interface LoginFormInput {
   email: string
   password: string
@@ -40,6 +42,7 @@ export interface SubscriptionData {
 }
 
 export type SubscriptionPlan = {
+  type: SUBSCRIPTION_PLAN;
   name: string;
   price: number;
   description: string;

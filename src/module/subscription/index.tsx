@@ -37,9 +37,9 @@ const Subscription = () => {
             price={plan.price}
             description={plan.description}
             features={plan.features}
-            isCurrentPlan={subscription?.planName === plan.name}
+            isCurrentPlan={subscription?.planName === plan.type}
             loading={loading}
-            onSubscribe={() => handleSubscription(plan.name)}
+            onSubscribe={() => handleSubscription(plan.type)}
             isDisplayButton={plan.isDisplayButton}
             isPro={plan.isPro}
           />
