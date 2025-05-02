@@ -14,6 +14,7 @@ export interface ChatSession {
   title: string;
   user_id: string;
   created_at: string;
+  is_default_title?: boolean;
 }
 
 export type MessageType = 'text' | 'emoji' | 'image';

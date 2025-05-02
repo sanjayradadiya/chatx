@@ -6,11 +6,13 @@ import { TypingIndicator } from "./components/typing-indicator";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useChat } from "./hooks/useChat";
+import { useParams } from "react-router";
+import { useEffect } from "react";
 
 const ChatWindow = () => {
-  const { 
-    messages, 
-    loading, 
+  const {
+    messages,
+    loading,
     isStreaming,
     streamingMessage,
     selectedFile,
@@ -27,11 +29,36 @@ const ChatWindow = () => {
     register,
     handleFileChange,
     handleFileButtonClick,
-    clearSelectedFile
+    clearSelectedFile,
   } = useChat();
-  
+  const { id } = useParams();
   const { state: sidebarState } = useSidebar();
-  const isSidebarExpanded = sidebarState === 'expanded';
+  const isSidebarExpanded = sidebarState === "expanded";
+
+  useEffect(() => {
+    // Scroll if streaming messages are coming in
+    if (isStreaming && streamingMessage !== null) {
+      if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+          inline: "nearest",
+        });
+      }
+      return;
+    }
+
+    // Scroll if new messages were added (not just during initial load)
+    if (messages.length && id) {
+      if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollIntoView({
+          behavior: "instant",
+          block: "end",
+          inline: "nearest",
+        });
+      }
+    }
+  }, [messages, id, isStreaming, streamingMessage, scrollAreaRef]);
 
   return (
     <div className="flex flex-col" ref={scrollAreaRef}>
@@ -123,7 +150,11 @@ const ChatWindow = () => {
       </div>
 
       {/* Message input - fixed at bottom */}
-      <div className={`fixed bottom-0 ${isSidebarExpanded ? 'left-64' : 'left-0'} right-0 bg-white`}>
+      <div
+        className={`fixed bottom-0 ${
+          isSidebarExpanded ? "left-64" : "left-0"
+        } right-0 bg-white`}
+      >
         <div className="mx-auto max-w-4xl p-4">
           {imagePreview && (
             <div className="mb-3 relative">
@@ -189,26 +220,27 @@ const ChatWindow = () => {
                         <Paperclip className="h-4 w-4" />
                       </Button>
                       <Button
-                      type="submit"
-                      variant="secondary"
-                      size="icon"
-                      className={`h-8 w-8 ${
-                        (!messageValue?.trim() && !selectedFile) || isStreaming
-                          ? "text-muted-foreground"
-                          : "text-primary"
-                      }`}
-                      disabled={
-                        loading ||
-                        isSending ||
-                        isSubmitting ||
-                        (!messageValue?.trim() && !selectedFile) ||
-                        isStreaming
-                      }
-                      aria-label="Send message"
-                      title="Send message"
-                    >
-                      <Send className="h-4 w-4" />
-                    </Button>
+                        type="submit"
+                        variant="secondary"
+                        size="icon"
+                        className={`h-8 w-8 ${
+                          (!messageValue?.trim() && !selectedFile) ||
+                          isStreaming
+                            ? "text-muted-foreground"
+                            : "text-primary"
+                        }`}
+                        disabled={
+                          loading ||
+                          isSending ||
+                          isSubmitting ||
+                          (!messageValue?.trim() && !selectedFile) ||
+                          isStreaming
+                        }
+                        aria-label="Send message"
+                        title="Send message"
+                      >
+                        <Send className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 </div>

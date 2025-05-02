@@ -8,7 +8,7 @@ export const chatService = {
     const title = `Chat ${new Date().toLocaleString()}`;
     const { data, error } = await supabaseClient
       .from('chat_sessions')
-      .insert({ title, user_id: userId })
+      .insert({ title, user_id: userId, is_default_title: true })
       .select()
       .single();
     
@@ -166,7 +166,7 @@ export const chatService = {
   ): Promise<ChatSession | null> {
     const { data, error } = await supabaseClient
       .from('chat_sessions')
-      .update({ title })
+      .update({ title, is_default_title: false })
       .eq('id', sessionId)
       .select()
       .single();

@@ -23,6 +23,7 @@ export const useChat = () => {
     updateChatTitle,
     streamingMessage,
     isStreaming,
+    currentSession
   } = useChatContext();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -54,31 +55,6 @@ export const useChat = () => {
       firstMessageSentRef.current = false;
     }
   }, [id, selectChatSession]);
-
-  useEffect(() => {
-    // Scroll if streaming messages are coming in
-    if (isStreaming && streamingMessage !== null) {
-      if (scrollAreaRef.current) {
-        scrollAreaRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'end',
-          inline: 'nearest'
-        });
-      }
-      return;
-    }
-    
-    // Scroll if new messages were added (not just during initial load)
-    if (messages.length && id) {
-      if (scrollAreaRef.current) {
-        scrollAreaRef.current.scrollIntoView({
-          behavior: 'instant',
-          block: 'end',
-          inline: 'nearest'
-        });
-      }
-    }
-  }, [messages, id, isStreaming, streamingMessage]);
 
   // Function to generate a chat title based on the first user message
   const generateChatTitle = async (userMessage: string) => {
@@ -116,7 +92,7 @@ export const useChat = () => {
         setImagePreview(null);
         
         // If this is a first message in a new chat, generate title
-        if (!firstMessageSentRef.current && id) {
+        if (!firstMessageSentRef.current && id && currentSession?.is_default_title) {
          await generateChatTitle(data.message || "Image shared");
         }
       } else if (data.message.trim()) {
@@ -125,7 +101,7 @@ export const useChat = () => {
         const messageType: MessageType = emojiRegex.test(data.message) ? 'emoji' : 'text';
         
         // If this is a first message in a new chat, generate title
-        if (!firstMessageSentRef.current && id) {
+        if (!firstMessageSentRef.current && id && currentSession?.is_default_title) {
          await generateChatTitle(data.message);
         }
 
