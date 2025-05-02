@@ -65,16 +65,30 @@ const ChatWindow = () => {
     }
   }, [id, selectChatSession]);
 
-  // Scroll to bottom when messages change or streaming happens
   useEffect(() => {
+    // Scroll if streaming messages are coming in
+    if (isStreaming && streamingMessage !== null) {
       if (scrollAreaRef.current) {
-       scrollAreaRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'end',
-        inline: 'nearest'
-       });
+        scrollAreaRef.current.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end',
+          inline: 'nearest'
+        });
       }
-  }, [messages, id, streamingMessage]); // Added streaming dependencies
+      return;
+    }
+    
+    // Scroll if new messages were added (not just during initial load)
+    if (messages.length && id) {
+      if (scrollAreaRef.current) {
+        scrollAreaRef.current.scrollIntoView({
+          behavior: 'instant',
+          block: 'end',
+          inline: 'nearest'
+        });
+      }
+    }
+  }, [messages, id, isStreaming, streamingMessage]);
 
   // Function to generate a chat title based on the first user message
   const generateChatTitle = async (userMessage: string) => {
@@ -197,9 +211,9 @@ const ChatWindow = () => {
   }, [currentUser]);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col" ref={scrollAreaRef}>
       {/* Chat messages */}
-      <div className="flex-1 overflow-auto p-4 w-full h-full mb-44 mx-auto max-w-4xl" ref={scrollAreaRef}>
+      <div className="flex-1 overflow-auto p-4 w-full h-full mb-44 mx-auto max-w-4xl">
         <div className="flex flex-col gap-4">
           {messages.length === 0 && !isStreaming ? (
             <div className="flex flex-col items-center justify-center h-48 gap-4 text-center">
