@@ -45,4 +45,6 @@ export type SubscriptionPlan = {
   description: string;
   features: string[];
   priceId?: string;
+  isPro: boolean;
+  isDisplayButton: boolean;
 };

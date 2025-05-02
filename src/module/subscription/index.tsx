@@ -30,40 +30,20 @@ const Subscription = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
-        {/* Free Plan */}
-        <SubscriptionCard
-          title={SUBSCRIPTION_PLANS.FREE.name}
-          price={SUBSCRIPTION_PLANS.FREE.price}
-          description={SUBSCRIPTION_PLANS.FREE.description}
-          features={SUBSCRIPTION_PLANS.FREE.features}
-          isCurrentPlan={subscription?.planName === "FREE"}
-          loading={loading}
-          onSubscribe={() => handleSubscription("FREE")}
-        />
-
-        {/* Pro Basic Plan */}
-        <SubscriptionCard
-          title={SUBSCRIPTION_PLANS.PRO_BASIC.name}
-          price={SUBSCRIPTION_PLANS.PRO_BASIC.price}
-          description={SUBSCRIPTION_PLANS.PRO_BASIC.description}
-          features={SUBSCRIPTION_PLANS.PRO_BASIC.features}
-          isPro
-          isCurrentPlan={subscription?.planName === "PRO_BASIC"}
-          loading={loading}
-          onSubscribe={() => handleSubscription("PRO_BASIC")}
-        />
-
-        {/* Pro Plus Plan */}
-        <SubscriptionCard
-          title={SUBSCRIPTION_PLANS.PRO_PLUS.name}
-          price={SUBSCRIPTION_PLANS.PRO_PLUS.price}
-          description={SUBSCRIPTION_PLANS.PRO_PLUS.description}
-          features={SUBSCRIPTION_PLANS.PRO_PLUS.features}
-          isPro
-          isCurrentPlan={subscription?.planName === "PRO_PLUS"}
-          loading={loading}
-          onSubscribe={() => handleSubscription("PRO_PLUS")}
-        />
+        {SUBSCRIPTION_PLANS.map((plan) => (
+          <SubscriptionCard
+            key={plan.name}
+            title={plan.name}
+            price={plan.price}
+            description={plan.description}
+            features={plan.features}
+            isCurrentPlan={subscription?.planName === plan.name}
+            loading={loading}
+            onSubscribe={() => handleSubscription(plan.name)}
+            isDisplayButton={plan.isDisplayButton}
+            isPro={plan.isPro}
+          />
+        ))}
       </div>
     </div>
   );

@@ -41,12 +41,6 @@ export const subscriptionService = {
    * @returns The result of the operation
    */
   async updateUserSubscription(userId: string, planName: string) {
-    // First, deactivate any existing subscription
-    await supabaseClient
-      .from("user_subscriptions")
-      .update({ active: false })
-      .eq("user_id", userId);
-
     // Check if the user already has a subscription record
     const { data } = await supabaseClient
       .from("user_subscriptions")
@@ -89,7 +83,7 @@ export const subscriptionService = {
     successUrl: string,
     cancelUrl: string
   ): Promise<string> {
-    const plan = SUBSCRIPTION_PLANS[planName];
+    const plan = SUBSCRIPTION_PLANS.find((p) => p.name === planName);
     
     if (!plan || !plan.priceId) {
       throw new Error("Invalid plan or plan does not have a price ID");
