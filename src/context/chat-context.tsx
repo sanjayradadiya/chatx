@@ -1,4 +1,4 @@
-import { ChatMessage, ChatSession, MessageType, SubscriptionData } from "@/config/types";
+import { ChatMessage, ChatSession, MessageType } from "@/config/types";
 import {
   createContext,
   useContext,
@@ -11,8 +11,8 @@ import {
 import { chatService } from "@/services/chat-service";
 import { useAuthProvider } from "./auth-provider";
 import { aiService } from "@/services/ai-service";
-import { subscriptionService } from "@/services/subscription-service";
 import { hasReachedQuestionLimit, getQuestionLimit } from "@/lib/subscription-utils";
+import { useSubscription } from "@/module/subscription/hooks/useSubscription";
 
 interface ChatContextType {
   chatSessions: ChatSession[];
@@ -23,7 +23,6 @@ interface ChatContextType {
   isNewChatSession: boolean;
   streamingMessage: string | null;
   isStreaming: boolean;
-  userSubscription: SubscriptionData | null;
   userQuestionCount: number;
   hasReachedLimit: boolean;
   questionLimit: number;
@@ -46,7 +45,6 @@ const ChatContext = createContext<ChatContextType>({
   isNewChatSession: false,
   streamingMessage: null,
   isStreaming: false,
-  userSubscription: null,
   userQuestionCount: 0,
   hasReachedLimit: true,
   questionLimit: 0,
@@ -71,39 +69,23 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
   const [streamingMessage, setStreamingMessage] = useState<string | null>(null);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
-  const [userSubscription, setUserSubscription] = useState<SubscriptionData | null>(null);
   const [userQuestionCount, setUserQuestionCount] = useState<number>(0);
   const { session } = useAuthProvider();
+  const { subscription } = useSubscription();
 
   // Calculate if user has reached their question limit
   const hasReachedLimit = useMemo(() => {
-    return userSubscription 
-      ? hasReachedQuestionLimit(userSubscription.planName, userQuestionCount)
+    return subscription 
+      ? hasReachedQuestionLimit(subscription.planName, userQuestionCount)
       : true;
-  },[userSubscription, userQuestionCount]);
+  },[subscription, userQuestionCount]);
     
   // Get the question limit for the user's plan
   const questionLimit = useMemo(() => {
-    return userSubscription 
-      ? getQuestionLimit(userSubscription.planName)
+    return subscription 
+      ? getQuestionLimit(subscription.planName)
       : getQuestionLimit(undefined);
-  },[userSubscription]);
-
-  // Fetch user subscription data
-  useEffect(() => {
-    if (session?.user.id) {
-      const fetchSubscription = async () => {
-        try {
-          const subData = await subscriptionService.getUserSubscription(session.user.id);
-          setUserSubscription(subData);
-        } catch (error) {
-          console.error("Failed to fetch user subscription:", error);
-        }
-      };
-      
-      fetchSubscription();
-    }
-  }, [session?.user.id]);
+  },[subscription]);
 
   // Automatically load sessions when authenticated
   useEffect(() => {
@@ -391,7 +373,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         isNewChatSession,
         streamingMessage,
         isStreaming,
-        userSubscription,
         userQuestionCount,
         hasReachedLimit,
         questionLimit,
