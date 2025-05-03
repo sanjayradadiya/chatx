@@ -4,6 +4,8 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./context/auth-provider";
 import { ChatProvider } from "./context/chat-context";
 import { ThemeProvider } from "./context/theme-provider";
+import { Analytics } from '@vercel/analytics/react';
+
 
 function App() {
   return (
@@ -20,6 +22,7 @@ function App() {
           </ChatProvider>
         </AuthProvider>
       </BrowserRouter>
+      <Analytics />
     </ThemeProvider>
   );
 }
