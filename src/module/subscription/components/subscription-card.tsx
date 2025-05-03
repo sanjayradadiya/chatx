@@ -18,6 +18,7 @@ interface SubscriptionCardProps {
   loading?: boolean;
   onSubscribe: () => void;
   isDisplayButton?: boolean;
+  buttonText?: string;
 }
 
 export function SubscriptionCard({
@@ -30,6 +31,7 @@ export function SubscriptionCard({
   loading = false,
   onSubscribe,
   isDisplayButton = false,
+  buttonText = "Upgrade",
 }: SubscriptionCardProps) {
   return (
     <Card
@@ -85,9 +87,7 @@ export function SubscriptionCard({
           >
             {isCurrentPlan
               ? "Current Plan"
-              : price === 0
-              ? "Get Free Plan"
-              : "Get Subscription"}
+              : buttonText}
           </Button>
         )}
       </CardFooter>

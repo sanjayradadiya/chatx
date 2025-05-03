@@ -40,6 +40,7 @@ const Subscription = () => {
             isCurrentPlan={subscription?.planName === plan.type}
             loading={loading}
             onSubscribe={() => handleSubscription(plan.type)}
+            buttonText={plan.buttonText}
             isDisplayButton={plan.isDisplayButton}
             isPro={plan.isPro}
           />

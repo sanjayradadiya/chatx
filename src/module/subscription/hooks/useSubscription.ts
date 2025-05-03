@@ -86,6 +86,10 @@ export const useSubscription = () => {
   const handleSubscription = useCallback((planName: SUBSCRIPTION_PLAN) => {
     if (planName === SUBSCRIPTION_PLAN.FREE) {
       subscribeToFreePlan();
+    } else if (planName === SUBSCRIPTION_PLAN.CUSTOM) {
+      toast.success("Currently, we only offer a subscription plan. Please contact support to get a custom plan.", {
+        position: "top-center",
+      });
     } else {
       subscribeToPaidPlan(planName);
     }

@@ -22,6 +22,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     description: "Great for regular users",
     features: ["5 chats per day", "3 response per chat", "Advanced AI responses", "Standard support"],
     priceId: "price_test_pro_basic",
+    buttonText: "Upgrade",
     isPro: true,
     isDisplayButton: true,
   },
@@ -38,6 +39,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "Custom chat templates",
     ],
     priceId: "price_test_pro_plus",
+    buttonText: "Upgrade",
     isPro: true,
     isDisplayButton: true,
   },
@@ -50,7 +52,8 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "Custom chat templates",
       "Data export",],
     priceId: "price_test_pro_enterprise",
+    buttonText: "Contact Support",
     isPro: true,
-    isDisplayButton: false,
+    isDisplayButton: true,
   }
 ];
