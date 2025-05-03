@@ -4,7 +4,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, X, Paperclip, Send } from "lucide-react";
 import { TypingIndicator } from "./components/typing-indicator";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
-import { useSidebar } from "@/components/ui/sidebar";
 import { useChat } from "./hooks/useChat";
 import { Link, useParams } from "react-router";
 import { useEffect } from "react";
@@ -26,6 +25,7 @@ const ChatWindow = () => {
     hasReachedLimit,
     questionLimit,
     userQuestionCount,
+    isSidebarExpanded,
     renderMessage,
     handleSubmit,
     onSubmit,
@@ -35,8 +35,6 @@ const ChatWindow = () => {
     clearSelectedFile,
   } = useChat();
   const { id } = useParams();
-  const { state: sidebarState } = useSidebar();
-  const isSidebarExpanded = sidebarState === "expanded";
 
   useEffect(() => {
     // Scroll if streaming messages are coming in

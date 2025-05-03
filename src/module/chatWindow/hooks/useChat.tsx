@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useEffect } from "react";
+import { useState, useRef, useMemo, useEffect, useCallback } from "react";
 import { useParams } from "react-router";
 import { useChatContext } from "@/context/chat-context";
 import { MessageType, ChatMessage } from "@/config/types";
@@ -7,6 +7,8 @@ import { aiService } from "@/services/ai-service";
 import { useForm } from "react-hook-form";
 import { useAuthProvider } from "@/context/auth-provider";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
+import { useSidebar } from "@/components/ui/sidebar";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatFormValues {
   message: string;
@@ -38,6 +40,8 @@ export const useChat = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const firstMessageSentRef = useRef<boolean>(false);
   const { currentUser } = useAuthProvider();
+  const { state: sidebarState } = useSidebar();
+  const isMobile = useIsMobile()
   
   const { 
     register, 
@@ -52,9 +56,21 @@ export const useChat = () => {
   });
   
   const messageValue = watch("message");
+  
+  const isSidebarExpanded = useMemo(() => {
+    return !isMobile && sidebarState === "expanded";
+  }, [sidebarState, isMobile]);
+
+  const userProfile = useMemo(() => {
+    return {
+      avatarUrl: currentUser?.user_metadata.avatar_url,
+      full_name: currentUser?.user_metadata.full_name,
+      email: currentUser?.email,
+    };
+  }, [currentUser]);
 
   useEffect(() => {
-    if (id && currentSession && (id !== currentSession?.id)) {
+    if (id && (id !== currentSession?.id)) {
       selectChatSession(id);
       // Reset the first message sent flag when changing chats
       firstMessageSentRef.current = false;
@@ -62,7 +78,7 @@ export const useChat = () => {
   }, [id, selectChatSession, currentSession]);
 
   // Function to generate a chat title based on the first user message
-  const generateChatTitle = async (userMessage: string) => {
+  const generateChatTitle = useCallback(async (userMessage: string) => {
     if (!id || firstMessageSentRef.current) return;
     
     try {
@@ -80,9 +96,9 @@ export const useChat = () => {
       console.error("Error generating chat title:", error);
       // If title generation fails, we'll keep the default title
     }
-  };
+  }, [id, updateChatTitle]);
 
-  const onSubmit = async (data: ChatFormValues) => {
+  const onSubmit = useCallback(async (data: ChatFormValues) => {
     if (isSending || loading || isSubmitting) return;
     
     // Check if there's content to send (file or non-empty message)
@@ -129,9 +145,9 @@ export const useChat = () => {
     } finally {
       setIsSending(false);
     }
-  };
+  }, [isSending, loading, isSubmitting, selectedFile, reset, sendImageMessage, sendMessage, incrementQuestionCount, firstMessageSentRef, id, currentSession, generateChatTitle]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       if (file.type.startsWith('image/')) {
@@ -147,22 +163,22 @@ export const useChat = () => {
         });
       }
     }
-  };
+  }, []);
 
-  const handleFileButtonClick = () => {
+  const handleFileButtonClick = useCallback(() => {
     fileInputRef.current?.click();
-  };
+  }, []);
 
-  const clearSelectedFile = () => {
+  const clearSelectedFile = useCallback(() => {
     setSelectedFile(null);
     setImagePreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-  };
+  }, []);
 
   // Function to render messages based on their type
-  const renderMessage = (msg: ChatMessage) => {
+  const renderMessage = useCallback((msg: ChatMessage) => {
     if (msg.message_type === 'image' && msg.file_url) {
       return (
         <div className="flex flex-col gap-2">
@@ -179,15 +195,7 @@ export const useChat = () => {
     } else {
       return <MarkdownRenderer>{msg.text}</MarkdownRenderer>;
     }
-  };
-
-  const userProfile = useMemo(() => {
-    return {
-      avatarUrl: currentUser?.user_metadata.avatar_url,
-      full_name: currentUser?.user_metadata.full_name,
-      email: currentUser?.email,
-    };
-  }, [currentUser]);
+  }, []);
 
   return {
     messages,
@@ -207,6 +215,7 @@ export const useChat = () => {
     userQuestionCount,
     hasReachedLimit,
     questionLimit,
+    isSidebarExpanded,
     renderMessage,
     handleSubmit,
     onSubmit,
