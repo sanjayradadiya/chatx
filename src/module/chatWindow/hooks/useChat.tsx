@@ -38,7 +38,6 @@ export const useChat = () => {
   const [isSending, setIsSending] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const firstMessageSentRef = useRef<boolean>(false);
   const { currentUser } = useAuthProvider();
   const { state: sidebarState } = useSidebar();
   const isMobile = useIsMobile()
@@ -72,14 +71,12 @@ export const useChat = () => {
   useEffect(() => {
     if (id && (id !== currentSession?.id)) {
       selectChatSession(id);
-      // Reset the first message sent flag when changing chats
-      firstMessageSentRef.current = false;
     }
   }, [id, selectChatSession, currentSession]);
 
   // Function to generate a chat title based on the first user message
   const generateChatTitle = useCallback(async (userMessage: string) => {
-    if (!id || firstMessageSentRef.current) return;
+    if (!id) return;
     
     try {
       // Generate the title using the AI service
@@ -89,9 +86,6 @@ export const useChat = () => {
       if (title && id) {
         await updateChatTitle(id, title);
       }
-      
-      // Mark that we've already generated a title for this chat
-      firstMessageSentRef.current = true;
     } catch (error) {
       console.error("Error generating chat title:", error);
       // If title generation fails, we'll keep the default title
@@ -116,7 +110,7 @@ export const useChat = () => {
         setImagePreview(null);
         
         // If this is a first message in a new chat, generate title
-        if (!firstMessageSentRef.current && id && currentSession?.is_default_title) {
+        if (id && currentSession?.is_default_title) {
          await generateChatTitle(data.message || "Image shared");
         }
 
@@ -135,7 +129,7 @@ export const useChat = () => {
           incrementQuestionCount(currentSession.id);
         }
         // If this is a first message in a new chat, generate title
-        if (!firstMessageSentRef.current && id && currentSession?.is_default_title) {
+        if (id && currentSession?.is_default_title) {
          await generateChatTitle(data.message);
         }
       }
@@ -145,7 +139,7 @@ export const useChat = () => {
     } finally {
       setIsSending(false);
     }
-  }, [isSending, loading, isSubmitting, selectedFile, reset, sendImageMessage, sendMessage, incrementQuestionCount, firstMessageSentRef, id, currentSession, generateChatTitle]);
+  }, [isSending, loading, isSubmitting, selectedFile, reset, sendImageMessage, sendMessage, incrementQuestionCount, id, currentSession, generateChatTitle]);
 
   const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
