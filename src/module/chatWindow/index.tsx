@@ -154,7 +154,7 @@ const ChatWindow = () => {
       <div
         className={`fixed bottom-0 ${
           isSidebarExpanded ? "left-64" : "left-0"
-        } right-0 bg-white`}
+        } right-0 bg-background`}
       >
         <div className="mx-auto max-w-4xl p-4">
           {imagePreview && (
