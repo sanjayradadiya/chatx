@@ -28,14 +28,29 @@ export const aiService = {
    * Generate a streaming response from the Gemini AI model
    * @param content Text prompt to send to the model
    * @param model Model name to use (defaults to gemini-2.0-flash)
+   * @param signal AbortSignal to cancel the request
    * @returns A stream of content chunks
    */
-  async generateContentStream(content: string, model: string = "gemini-2.0-flash") {
-    const streamingResponse = await this._genAI.models.generateContentStream({
+  async generateContentStream(
+    content: string, 
+    model: string = "gemini-2.0-flash",
+    signal?: AbortSignal
+  ) {
+    // Setup the request parameters
+    const params = {
       model,
       contents: content,
-    });
+    };
     
+    // If the request is aborted before it starts, throw an AbortError
+    if (signal?.aborted) {
+      throw new DOMException("Request aborted", "AbortError");
+    }
+    
+    // Start the streaming request
+    const streamingResponse = await this._genAI.models.generateContentStream(params);
+    
+    // Return the streaming response, which will be monitored by the abort signal in the component
     return streamingResponse;
   },
 

@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
 } from "react";
 import { chatService } from "@/services/chat-service";
 import { useAuthProvider } from "./auth-provider";
@@ -34,6 +35,7 @@ interface ChatContextType {
   updateChatTitle: (sessionId: string, title: string) => Promise<void>;
   deleteChatSession: (sessionId: string) => Promise<boolean>;
   incrementQuestionCount: (sessionId: string) => Promise<void>;
+  stopResponseStreaming: () => void;
 }
 
 const ChatContext = createContext<ChatContextType>({
@@ -56,6 +58,7 @@ const ChatContext = createContext<ChatContextType>({
   updateChatTitle: async () => {},
   deleteChatSession: async () => false,
   incrementQuestionCount: async () => {},
+  stopResponseStreaming: () => {},
 });
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
@@ -67,11 +70,12 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [isNewChatSession, setIsNewChatSession] = useState<boolean>(false);
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
-  const [streamingMessage, setStreamingMessage] = useState<string | null>(null);
+  const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [userQuestionCount, setUserQuestionCount] = useState<number>(0);
   const { session } = useAuthProvider();
   const { subscription } = useSubscription();
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   // Calculate if user has reached their question limit
   const hasReachedLimit = useMemo(() => {
@@ -178,6 +182,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     async (text: string, messageType: MessageType = "text") => {
       if (!session?.user.id || !currentSession) return;
       setIsNewChatSession(false); // when message send first time
+      setLoading(true);
       
       // Send user message
       const userMessage = await chatService.sendUserMessage(
@@ -190,15 +195,24 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       if (userMessage) {
         setMessages((prev) => [...prev, userMessage]);
         setIsStreaming(true);
+        setLoading(false);
         setStreamingMessage("");
         
         try {
+          // Create a new AbortController for this streaming request
+          abortControllerRef.current = new AbortController();
+          
           // Generate a streaming response using AI service
-          const stream = await aiService.generateContentStream(text);
+          const stream = await aiService.generateContentStream(text, undefined, abortControllerRef.current.signal);
           let fullResponse = "";
 
           // Process each chunk as it arrives
           for await (const chunk of stream) {
+            // Check if the request has been aborted
+            if (abortControllerRef.current?.signal.aborted) {
+              break;
+            }
+            
             if (chunk && chunk.text) {
               const chunkText = chunk.text;
               fullResponse += chunkText;
@@ -221,7 +235,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           console.error("Error generating AI response:", error);
         } finally {
           setIsStreaming(false);
-          setStreamingMessage(null);
+          setStreamingMessage("");
+          abortControllerRef.current = null;
         }
       }
     },
@@ -249,13 +264,21 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           setStreamingMessage("");
           
           try {
+            // Create a new AbortController for this streaming request
+            abortControllerRef.current = new AbortController();
+            
             // Generate a streaming response using AI service
             const prompt = userMessage.text || "Describe this image";
-            const stream = await aiService.generateContentStream(prompt);
+            const stream = await aiService.generateContentStream(prompt, undefined, abortControllerRef.current.signal);
             let fullResponse = "";
 
             // Process each chunk as it arrives
             for await (const chunk of stream) {
+              // Check if the request has been aborted
+              if (abortControllerRef.current?.signal.aborted) {
+                break;
+              }
+              
               if (chunk && chunk.text) {
                 const chunkText = chunk.text;
                 fullResponse += chunkText;
@@ -278,7 +301,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
             console.error("Error generating AI response:", error);
           } finally {
             setIsStreaming(false);
-            setStreamingMessage(null);
+            setStreamingMessage("");
           }
         }
       } catch (error) {
@@ -362,6 +385,12 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     fetchChatSessions();
   }, [fetchChatSessions]);
 
+  const stopResponseStreaming = useCallback(() => {
+    if (abortControllerRef.current && isStreaming) {
+      abortControllerRef.current.abort();
+    }
+  }, [isStreaming]);
+
   return (
     <ChatContext.Provider
       value={{
@@ -384,6 +413,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         updateChatTitle,
         deleteChatSession,
         incrementQuestionCount,
+        stopResponseStreaming,
       }}
     >
       {children}

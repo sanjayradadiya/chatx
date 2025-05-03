@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Bot, X, Paperclip, Send } from "lucide-react";
+import { Bot, X, Paperclip, Send, CircleStop } from "lucide-react";
 import { TypingIndicator } from "./components/typing-indicator";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
 import { useChat } from "./hooks/useChat";
@@ -33,6 +33,7 @@ const ChatWindow = () => {
     handleFileChange,
     handleFileButtonClick,
     clearSelectedFile,
+    stopResponseStreaming
   } = useChat();
   const { id } = useParams();
 
@@ -222,7 +223,7 @@ const ChatWindow = () => {
                         type="button"
                         variant="secondary"
                         size="icon"
-                        className="h-8 w-8"
+                        className="h-8 w-8 cursor-pointer"
                         onClick={handleFileButtonClick}
                         disabled={
                           loading ||
@@ -237,11 +238,24 @@ const ChatWindow = () => {
                       >
                         <Paperclip className="h-4 w-4" />
                       </Button>
-                      <Button
-                        type="submit"
-                        variant="secondary"
-                        size="icon"
-                        className={`h-8 w-8 ${
+                      {isStreaming ? (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={stopResponseStreaming}
+                          className="h-8 w-8 cursor-pointer"
+                          aria-label="Stop Response"
+                          title="Stop Response"
+                        >
+                          <CircleStop className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button
+                          type="submit"
+                          variant="secondary"
+                          size="icon"
+                        className={`h-8 w-8 cursor-pointer ${
                           (!messageValue?.trim() && !selectedFile) ||
                           isStreaming || hasReachedLimit
                             ? "text-muted-foreground"
@@ -260,6 +274,7 @@ const ChatWindow = () => {
                       >
                         <Send className="h-4 w-4" />
                       </Button>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -29,7 +29,8 @@ export const useChat = () => {
     userQuestionCount,
     hasReachedLimit,
     questionLimit,
-    incrementQuestionCount
+    incrementQuestionCount,
+    stopResponseStreaming
   } = useChatContext();
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -214,6 +215,7 @@ export const useChat = () => {
     register,
     handleFileChange,
     handleFileButtonClick,
-    clearSelectedFile
+    clearSelectedFile,
+    stopResponseStreaming
   };
 }; 
