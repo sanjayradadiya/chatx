@@ -105,15 +105,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [session?.user.id]);
 
-  // Update user question count when current session changes
-  useEffect(() => {
-    if (currentSession) {
-      setUserQuestionCount(currentSession.questions_count || 0);
-    } else {
-      setUserQuestionCount(0);
-    }
-  }, [currentSession]);
-
   // Automatically load sessions when authenticated
   useEffect(() => {
     if (session?.user.id) {
@@ -158,6 +149,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       if (newSession) {
         setChatSessions((prev) => [newSession, ...prev]);
         setCurrentSession(newSession);
+        setUserQuestionCount(newSession.questions_count || 0);
         setMessages([]);
         setIsNewChatSession(false);
       }
@@ -184,7 +176,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
         if (selectedSession) {
           setCurrentSession(selectedSession);
-
+          setUserQuestionCount(selectedSession.questions_count || 0);
           // Fetch messages for this session
           const sessionMessages = await chatService.getChatMessages(sessionId);
           setMessages(sessionMessages);
@@ -215,17 +207,6 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
       if (userMessage) {
         setMessages((prev) => [...prev, userMessage]);
-        
-        // Update question count in the current session
-        if (currentSession) {
-          const updatedCount = (currentSession.questions_count || 0) + 1;
-          setCurrentSession({
-            ...currentSession,
-            questions_count: updatedCount
-          });
-          setUserQuestionCount(updatedCount);
-        }
-        
         setIsStreaming(true);
         setStreamingMessage("");
         
@@ -281,18 +262,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         );
 
         if (userMessage) {
-          setMessages((prev) => [...prev, userMessage]);
-          
-          // Update question count in the current session
-          if (currentSession) {
-            const updatedCount = (currentSession.questions_count || 0) + 1;
-            setCurrentSession({
-              ...currentSession,
-              questions_count: updatedCount
-            });
-            setUserQuestionCount(updatedCount);
-          }
-          
+          setMessages((prev) => [...prev, userMessage]);          
           setIsStreaming(true);
           setStreamingMessage("");
           
@@ -355,14 +325,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           
           // Update current session if it's the one being modified
           if (currentSession?.id === sessionId) {
-            setCurrentSession({...currentSession, title});
+            setCurrentSession(updatedSession);
+            fetchChatSessions();
           }
         }
       } catch (error) {
         console.error("Error updating chat title:", error);
       }
     },
-    [currentSession, session]
+    [currentSession, session, fetchChatSessions]
   );
 
   const deleteChatSession = useCallback(
@@ -396,9 +367,18 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const incrementQuestionCount = useCallback(async (sessionId: string) => {
     if (!sessionId) return;
     // Update the question count in the current session
-   const updatedCount = await chatService.incrementQuestionCount(sessionId);
-   setUserQuestionCount(updatedCount);
-  }, []);
+    const updatedCount = await chatService.incrementQuestionCount(sessionId);
+
+    setCurrentSession((prev: ChatSession | null) => {
+      if (!prev) return null;
+      return {
+        ...prev,
+        questions_count: updatedCount,
+      };
+    });
+    setUserQuestionCount(updatedCount);
+    fetchChatSessions();
+  }, [fetchChatSessions]);
 
   return (
     <ChatContext.Provider

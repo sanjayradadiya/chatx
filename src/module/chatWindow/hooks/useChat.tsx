@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useParams } from "react-router";
 import { useChatContext } from "@/context/chat-context";
 import { MessageType, ChatMessage } from "@/config/types";
@@ -52,14 +52,14 @@ export const useChat = () => {
   });
   
   const messageValue = watch("message");
-  
+
   useEffect(() => {
-    if (id) {
+    if (id && currentSession && (id !== currentSession?.id)) {
       selectChatSession(id);
       // Reset the first message sent flag when changing chats
       firstMessageSentRef.current = false;
     }
-  }, [id, selectChatSession]);
+  }, [id, selectChatSession, currentSession]);
 
   // Function to generate a chat title based on the first user message
   const generateChatTitle = async (userMessage: string) => {
