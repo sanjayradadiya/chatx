@@ -17,6 +17,22 @@ export const authService = {
   },
 
   /**
+   * Check if a user with the given email already exists
+   * @param email Email address to check
+   * @returns Boolean indicating whether the user exists
+   */
+  async checkUserExists(email: string) {
+    // We can use the signUp function with the identities length check to determine if a user exists
+    const { data } = await supabaseClient.auth.signUp({
+      email,
+      password: crypto.randomUUID(), // Use a random password as we'll never use it
+    });
+    
+    // If identities array is empty, the user already exists
+    return data.user?.identities?.length === 0;
+  },
+
+  /**
    * Sign up a new user with email, password and profile data
    * @param userData User registration data
    * @returns Result of the sign-up operation

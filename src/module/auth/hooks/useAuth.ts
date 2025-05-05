@@ -44,19 +44,30 @@ const useAuth = (reset: () => void) => {
   }, [navigate, setCurrentUser]);
 
   const signUpNewUser = useCallback(async (signUpData: SignUpFormInput) => {
-    setLoading(true);
-    const { error } = await authService.signUpWithEmail(signUpData);
+    try {
+      setLoading(true);
+      const userExists = await authService.checkUserExists(signUpData.email);
+      if (userExists) {
+        throw new Error('User already exists.');
+      }
+      const { error } = await authService.signUpWithEmail(signUpData);
 
-    if (error) {
-      toast(error.message, {
-        position: 'top-center'
+      if (error) {
+        throw new Error(error.message);
+      } else {
+        toast("Check your email for verification link", {
+          position: "top-center"
+        });
+        reset();
+        setLoading(false);
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Error signing up";
+      await authService.signOut();
+      toast.error(errorMessage, {
+        position: "top-center",
       });
-      setLoading(false);
-    } else {
-      toast("Check your email for verification link", {
-        position: "top-center"
-      });
-      reset();
       setLoading(false);
     }
   }, [reset]);
