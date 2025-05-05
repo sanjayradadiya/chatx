@@ -19,6 +19,7 @@ interface SubscriptionCardProps {
   onSubscribe: () => void;
   isDisplayButton?: boolean;
   buttonText?: string;
+  disabled?: boolean;
 }
 
 export function SubscriptionCard({
@@ -32,6 +33,7 @@ export function SubscriptionCard({
   onSubscribe,
   isDisplayButton = false,
   buttonText = "Upgrade",
+  disabled = false,
 }: SubscriptionCardProps) {
   return (
     <Card
@@ -39,7 +41,8 @@ export function SubscriptionCard({
         "w-full max-w-sm bg-card border-card-foreground/20 transition-all duration-200 justify-between",
         isPro && "shadow-lg relative overflow-hidden",
         isPro &&
-          "before:absolute before:inset-0 before:inset-x-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary before:to-transparent"
+          "before:absolute before:inset-0 before:inset-x-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-primary before:to-transparent",
+        disabled && "opacity-60"
       )}
     >
       {isPro && (
@@ -83,10 +86,12 @@ export function SubscriptionCard({
             variant={isPro ? "default" : "outline"}
             className="w-full cursor-pointer"
             onClick={onSubscribe}
-            disabled={loading || isCurrentPlan}
+            disabled={loading || isCurrentPlan || disabled}
           >
             {isCurrentPlan
               ? "Current Plan"
+              : disabled
+              ? "Not Available"
               : buttonText}
           </Button>
         )}

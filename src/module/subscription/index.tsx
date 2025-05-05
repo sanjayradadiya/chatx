@@ -1,8 +1,9 @@
-
 import { useSubscription } from "@/module/subscription/hooks/useSubscription";
 import { useAuthProvider } from "@/context/auth-provider";
 import { SubscriptionCard } from "./components/subscription-card";
 import { SUBSCRIPTION_PLANS } from "@/config/constant";
+import { isLowerTierPlan } from "@/lib/subscription-utils";
+import { SUBSCRIPTION_PLAN } from "@/config/enum";
 
 const Subscription = () => {
   const { currentUser } = useAuthProvider();
@@ -30,21 +31,30 @@ const Subscription = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-8 justify-center">
-        {SUBSCRIPTION_PLANS.map((plan) => (
-          <SubscriptionCard
-            key={plan.name}
-            title={plan.name}
-            price={plan.price}
-            description={plan.description}
-            features={plan.features}
-            isCurrentPlan={subscription?.planName === plan.type}
-            loading={loading}
-            onSubscribe={() => handleSubscription(plan.type)}
-            buttonText={plan.buttonText}
-            isDisplayButton={plan.isDisplayButton}
-            isPro={plan.isPro}
-          />
-        ))}
+        {SUBSCRIPTION_PLANS.map((plan) => {
+          const isCurrentPlan = subscription?.planName === plan.type;
+          const isLowerTier = isLowerTierPlan(
+            plan.type as SUBSCRIPTION_PLAN,
+            subscription?.planName as SUBSCRIPTION_PLAN | undefined
+          );
+
+          return (
+            <SubscriptionCard
+              key={plan.name}
+              title={plan.name}
+              price={plan.price}
+              description={plan.description}
+              features={plan.features}
+              isCurrentPlan={isCurrentPlan}
+              loading={loading}
+              onSubscribe={() => handleSubscription(plan.type)}
+              buttonText={plan.buttonText}
+              isDisplayButton={plan.isDisplayButton}
+              isPro={plan.isPro}
+              disabled={isLowerTier}
+            />
+          );
+        })}
       </div>
     </div>
   );
