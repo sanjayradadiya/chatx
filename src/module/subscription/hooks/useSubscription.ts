@@ -27,7 +27,15 @@ export const useSubscription = () => {
 
       try {
         const subData = await subscriptionService.getUserSubscription(currentUser.id);
-        setSubscription(subData);
+        
+        // If user has no subscription data, automatically set the free plan
+        if (!subData) {
+          await subscriptionService.updateUserSubscription(currentUser.id, SUBSCRIPTION_PLAN.FREE);
+          const freeSubData = await subscriptionService.getUserSubscription(currentUser.id);
+          setSubscription(freeSubData);
+        } else {
+          setSubscription(subData);
+        }
       } catch (error) {
         console.error("Error fetching subscription:", error);
       } finally {
