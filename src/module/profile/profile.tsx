@@ -328,7 +328,7 @@ export default function Profile() {
                   <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
                   <AlertDialogAction 
                     onClick={deleteAccount} 
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+                    className="bg-destructive text-white hover:bg-destructive/90 cursor-pointer"
                     disabled={isDeleting}
                   >
                     {isDeleting ? (
