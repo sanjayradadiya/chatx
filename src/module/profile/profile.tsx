@@ -313,7 +313,7 @@ export default function Profile() {
 
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="w-full sm:w-auto">
+                <Button variant="destructive" className="w-full sm:w-auto cursor-pointer">
                   Delete Account
                 </Button>
               </AlertDialogTrigger>
