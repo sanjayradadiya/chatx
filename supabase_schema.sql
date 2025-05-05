@@ -130,3 +130,32 @@ USING (auth.uid() = user_id);
 
 -- Create index for better performance
 CREATE INDEX IF NOT EXISTS idx_user_subscriptions_user_id ON user_subscriptions(user_id);
+
+-- Add a function to delete a user and all their data
+-- This is used by the client side to delete a user account
+CREATE OR REPLACE FUNCTION public.delete_user()
+RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER
+AS $$
+BEGIN
+  -- Delete chat messages in sessions owned by the user
+  DELETE FROM public.chat_messages
+  WHERE user_id = auth.uid()
+
+  -- Delete chat sessions created by the user
+  DELETE FROM public.chat_sessions
+  WHERE user_id = auth.uid();
+
+  -- Delete user subscriptions
+  DELETE FROM public.user_subscriptions
+  WHERE user_id = auth.uid();
+
+  -- Delete the user from auth.users
+  DELETE FROM auth.users
+  WHERE id = auth.uid();
+END;
+$$;
+
+
+-- Grant execute permission to authenticated users
+GRANT EXECUTE ON FUNCTION public.delete_user() TO authenticated;

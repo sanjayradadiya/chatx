@@ -93,5 +93,29 @@ export const authService = {
         redirectTo: `${window.location.origin}/dashboard`,
       },
     });
+  },
+
+  /**
+   * Delete the current user account
+   * This method uses a PostgreSQL function to handle the deletion since
+   * the client-side auth.deleteUser() is not available
+   * @returns Result of the delete operation
+   */
+  async deleteUser() {
+    try {
+      // Use a Supabase PostgreSQL function to delete the user
+      // This will call the RPC function 'delete_user' which should be created in Supabase
+      const { data, error } = await supabaseClient.rpc('delete_user');
+      
+      if (error) throw error;
+      
+      // Sign out the user after successful deletion
+      await this.signOut();
+      
+      return { data, error: null };
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return { data: null, error };
+    }
   }
 };

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProfile } from "@/module/profile/hooks/useProfile";
-import { Camera, Loader2, CreditCard, Calendar, Clock, Info } from "lucide-react";
+import { Camera, Loader2, CreditCard, Calendar, Clock, Info, AlertTriangle } from "lucide-react";
 import { useSubscription } from "../subscription/hooks/useSubscription";
 import { SubscriptionData } from "@/config/types";
 import { 
@@ -18,6 +18,17 @@ import {
   PopoverContent,
   PopoverTrigger 
 } from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Profile() {
   const { subscription, handleUpdatePlan } =
@@ -32,9 +43,11 @@ export default function Profile() {
     userProfile,
     fullName,
     isUpdating,
+    isDeleting,
     fileInputRef,
     expirationDate,
     currentPlanDetails,
+    deleteAccount,
   } = useProfile(subscription as SubscriptionData);
 
   return (
@@ -280,6 +293,56 @@ export default function Profile() {
                 </div>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-destructive/20">
+          <CardHeader className="text-destructive">
+            <CardTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5" />
+              Danger Zone
+            </CardTitle>
+            <CardDescription>Actions that will permanently affect your account.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Deleting your account will permanently remove all your data, including profile information, 
+              subscription details, chat history, and any files you've uploaded. This action cannot be undone.
+            </p>
+
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="w-full sm:w-auto">
+                  Delete Account
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete your account
+                    and remove all your data from our servers.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="cursor-pointer">Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={deleteAccount} 
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90 cursor-pointer"
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Deleting...
+                      </>
+                    ) : (
+                      "Delete Account"
+                    )}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </CardContent>
         </Card>
       </div>

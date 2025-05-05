@@ -6,6 +6,7 @@ import { useAuthProvider } from '@/context/auth-provider';
 import { toast } from 'sonner';
 import { SubscriptionData } from '@/config/types';
 import { SUBSCRIPTION_PLANS } from '@/config/constant';
+import { useNavigate } from 'react-router-dom';
 
 const STORAGE_BUCKET = 'profile-images';
 
@@ -14,10 +15,12 @@ export function useProfile(subscription: SubscriptionData) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const { currentUser, setCurrentUser } = useAuthProvider();
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [fullName, setFullName] = useState<string>(
     currentUser?.user_metadata?.full_name || ""
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
 
   const userProfile = useMemo(() => {
     return {
@@ -166,6 +169,42 @@ export function useProfile(subscription: SubscriptionData) {
     return name.charAt(0) + (name.split(" ")[1]?.charAt(0) || "");
   };
 
+  const deleteAccount = async () => {
+    if (!currentUser) {
+      toast.error("User not authenticated", {
+        position: "top-center",
+      });
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+
+      // Call the authService.deleteUser method to handle the deletion
+      const { error } = await authService.deleteUser();
+
+      if (error) throw error;
+
+      // Sign out handled by authService.deleteUser
+      setCurrentUser(null);
+      
+      toast.success("Account deleted successfully", {
+        position: "top-center",
+      });
+      
+      navigate('/');
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Error deleting account";
+      toast.error(errorMessage, {
+        position: "top-center",
+      });
+      console.error("Error deleting account:", error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return {
     userProfile,
     isUploading,
@@ -174,6 +213,7 @@ export function useProfile(subscription: SubscriptionData) {
     currentPlanDetails,
     fullName,
     isUpdating,
+    isDeleting,
     fileInputRef,
     getInitials,
     triggerFileInput,
@@ -182,5 +222,6 @@ export function useProfile(subscription: SubscriptionData) {
     uploadProfileImage,
     updateProfile,
     setFullName,
+    deleteAccount,
   };
 } 
