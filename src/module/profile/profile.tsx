@@ -306,8 +306,9 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground mb-4">
-              Deleting your account will permanently remove all your data, including profile information, 
-              subscription details, chat history, and any files you've uploaded. This action cannot be undone.
+              Deleting your account will deactivate your access to all services and hide your user profile.
+              Your data will be retained for a period according to our data retention policy.
+              Contact support if you need to restore your account.
             </p>
 
             <AlertDialog>
@@ -318,10 +319,11 @@ export default function Profile() {
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogTitle>Are you sure you want to delete your account?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete your account
-                    and remove all your data from our servers.
+                    Your account will be marked as deleted and you will be signed out.
+                    You won't be able to access the platform with this account anymore.
+                    If you change your mind, please contact our support team.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

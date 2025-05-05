@@ -135,23 +135,16 @@ CREATE INDEX IF NOT EXISTS idx_user_subscriptions_user_id ON user_subscriptions(
 -- This is used by the client side to delete a user account
 CREATE OR REPLACE FUNCTION public.delete_user()
 RETURNS void
-LANGUAGE plpgsql SECURITY DEFINER
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth
 AS $$
 BEGIN
-  -- Delete chat messages in sessions owned by the user
-  DELETE FROM public.chat_messages
-  WHERE user_id = auth.uid()
-
-  -- Delete chat sessions created by the user
-  DELETE FROM public.chat_sessions
-  WHERE user_id = auth.uid();
-
-  -- Delete user subscriptions
-  DELETE FROM public.user_subscriptions
-  WHERE user_id = auth.uid();
-
-  -- Delete the user from auth.users
-  DELETE FROM auth.users
+  -- Update the user's app metadata to mark them as deleted
+  UPDATE auth.users
+  SET raw_user_meta_data = 
+    COALESCE(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('status', 'deleted'),
+        updated_at = now()
   WHERE id = auth.uid();
 END;
 $$;

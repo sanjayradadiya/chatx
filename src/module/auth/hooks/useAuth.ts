@@ -1,8 +1,9 @@
+import { USER_STATUS } from "@/config/enum";
 import { LoginFormInput, SignUpFormInput } from "@/config/types";
 import { useAuthProvider } from "@/context/auth-provider";
 import { authService } from "@/services/auth-service";
 import { Provider } from "@supabase/supabase-js";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner"
 
@@ -10,31 +11,37 @@ import { toast } from "sonner"
 const useAuth = (reset: () => void) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const { setCurrentUser } = useAuthProvider();
 
   const navigate = useNavigate()
-  const { session } = useAuthProvider()
-
-
-  useEffect(() => {
-    if (session) {
-      navigate('/dashboard');
-    }
-  }, [session, navigate]);
 
   const signInWithEmail = useCallback(async (loginData: LoginFormInput) => {
-    setLoading(true);
-    const { error } = await authService.signInWithEmail(loginData);
+    try {
+      setLoading(true);
+      const { data, error } = await authService.signInWithEmail(loginData);
 
-    if (error) {
-      toast(error.message, {
-        position: "top-center"
-      })
-      setLoading(false);
-    } else {
-      navigate('/dashboard');
+      // Check if the user account has been marked as deleted
+      if (data.user?.user_metadata?.status === USER_STATUS.DEACTIVE) {
+        throw new Error('Your account has been deleted. Please contact support.');
+      }
+
+      if (error) {
+        throw new Error(error.message);
+      } else {
+        setCurrentUser(data.user);
+        navigate('/dashboard');
+        setLoading(false);
+      }
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Error deleting account";
+      await authService.signOut();
+      toast.error(errorMessage, {
+        position: "top-center",
+      });
       setLoading(false);
     }
-  }, [navigate]);
+  }, [navigate, setCurrentUser]);
 
   const signUpNewUser = useCallback(async (signUpData: SignUpFormInput) => {
     setLoading(true);

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import supabaseClient from '@/services/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import { authService } from '@/services/auth-service';
@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { SubscriptionData } from '@/config/types';
 import { SUBSCRIPTION_PLANS } from '@/config/constant';
 import { useNavigate } from 'react-router-dom';
+import { USER_STATUS } from '@/config/enum';
 
 const STORAGE_BUCKET = 'profile-images';
 
@@ -51,6 +52,20 @@ export function useProfile(subscription: SubscriptionData) {
     if (!subscription) return SUBSCRIPTION_PLANS[0]; // Default to FREE plan
     return SUBSCRIPTION_PLANS.find(plan => plan.type === subscription.planName) || SUBSCRIPTION_PLANS[0];
   }, [subscription]);
+
+  useEffect(() => {
+    // Check if the user account has been marked as deleted
+    if (currentUser?.user_metadata?.status === USER_STATUS.DEACTIVE) {
+      // Sign out and redirect to home page
+      authService.signOut().then(() => {
+        setCurrentUser(null);
+        toast.error("This account has been deleted. Please contact support if you wish to restore it.", {
+          position: "top-center",
+        });
+        navigate('/');
+      });
+    }
+  }, [currentUser, navigate, setCurrentUser]);
 
   const uploadProfileImage = async (file: File) => {
     if (!currentUser) {
@@ -199,7 +214,6 @@ export function useProfile(subscription: SubscriptionData) {
       toast.error(errorMessage, {
         position: "top-center",
       });
-      console.error("Error deleting account:", error);
     } finally {
       setIsDeleting(false);
     }
