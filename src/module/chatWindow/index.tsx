@@ -33,7 +33,8 @@ const ChatWindow = () => {
     handleFileChange,
     handleFileButtonClick,
     clearSelectedFile,
-    stopResponseStreaming
+    stopResponseStreaming,
+    contentRef,
   } = useChat();
   const { id } = useParams();
 
@@ -83,7 +84,7 @@ const ChatWindow = () => {
               </div>
             </div>
           ) : (
-            <>
+            <div ref={contentRef}>
               {/* Display all existing messages */}
               {messages.map((msg) => (
                 <div
@@ -133,7 +134,7 @@ const ChatWindow = () => {
                   </div>
                 </div>
               )}
-            </>
+            </div>
           )}
 
           {loading && !isStreaming && (

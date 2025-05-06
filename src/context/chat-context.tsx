@@ -14,6 +14,7 @@ import { useAuthProvider } from "./auth-provider";
 import { aiService } from "@/services/ai-service";
 import { hasReachedQuestionLimit, getQuestionLimit } from "@/lib/subscription-utils";
 import { useSubscription } from "@/module/subscription/hooks/useSubscription";
+import usePrintPDF from "../hooks/use-print-pdf";
 
 interface ChatContextType {
   chatSessions: ChatSession[];
@@ -36,6 +37,8 @@ interface ChatContextType {
   deleteChatSession: (sessionId: string) => Promise<boolean>;
   incrementQuestionCount: (sessionId: string) => Promise<void>;
   stopResponseStreaming: () => void;
+  contentRef: React.RefObject<HTMLDivElement>;
+  handlePrint: () => void;
 }
 
 const ChatContext = createContext<ChatContextType>({
@@ -59,6 +62,8 @@ const ChatContext = createContext<ChatContextType>({
   deleteChatSession: async () => false,
   incrementQuestionCount: async () => {},
   stopResponseStreaming: () => {},
+  contentRef: { current: null },
+  handlePrint: () => {},
 });
 
 export const ChatProvider = ({ children }: { children: ReactNode }) => {
@@ -76,6 +81,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const { session } = useAuthProvider();
   const { subscription } = useSubscription();
   const abortControllerRef = useRef<AbortController | null>(null);
+  const { contentRef, handlePrint } = usePrintPDF();
 
   // Calculate if user has reached their question limit
   const hasReachedLimit = useMemo(() => {
@@ -414,6 +420,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         deleteChatSession,
         incrementQuestionCount,
         stopResponseStreaming,
+        contentRef,
+        handlePrint,
       }}
     >
       {children}
