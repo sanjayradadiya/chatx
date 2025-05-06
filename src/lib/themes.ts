@@ -2,6 +2,15 @@ export type ColorScheme = "blue" | "green" | "red" | "purple" | "orange" | "defa
 
 export const colorSchemes: ColorScheme[] = ["default", "blue", "green", "red", "purple", "orange"];
 
+export const colorSamples: Record<ColorScheme, string> = {
+  default: "bg-[oklch(0.922_0_0)]",
+  blue: "bg-[oklch(0.55_0.2_240)]",
+  green: "bg-[oklch(0.55_0.2_150)]",
+  red: "bg-[oklch(0.55_0.25_25)]",
+  purple: "bg-[oklch(0.55_0.25_300)]",
+  orange: "bg-[oklch(0.55_0.25_60)]",
+};
+
 // OKLCH color values for each theme
 export const colorThemes = {
   // Default theme colors (neutral)

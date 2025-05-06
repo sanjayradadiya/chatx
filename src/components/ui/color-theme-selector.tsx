@@ -10,7 +10,7 @@ import {
   DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/context/theme-provider";
-import { ColorScheme, colorSchemes } from "@/lib/themes";
+import { colorSamples, ColorScheme, colorSchemes } from "@/lib/themes";
 import { cn } from "@/lib/utils";
 
 const colorNames: Record<ColorScheme, string> = {
@@ -20,16 +20,6 @@ const colorNames: Record<ColorScheme, string> = {
   red: "Red",
   purple: "Purple",
   orange: "Orange",
-};
-
-// Color representations for the dropdown menu items
-const colorSamples: Record<ColorScheme, string> = {
-  default: "bg-[oklch(0.922_0_0)]",
-  blue: "bg-[oklch(0.55_0.2_240)]",
-  green: "bg-[oklch(0.55_0.2_150)]",
-  red: "bg-[oklch(0.55_0.25_25)]",
-  purple: "bg-[oklch(0.55_0.25_300)]",
-  orange: "bg-[oklch(0.55_0.25_60)]",
 };
 
 export function ColorThemeSelector() {
