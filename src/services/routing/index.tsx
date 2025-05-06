@@ -12,6 +12,7 @@ import ForgotPassword from "@/pages/forgot-password/forgot-password";
 import ProfilePage from "@/pages/profile/profile-page";
 import SubscriptionPage from "@/pages/subscription/subscription-page";
 import SubscriptionSuccessPage from "@/pages/subscription/subscription-success-page";
+import OnboardingFlow from "@/module/onboarding";
 
 const RootNavigator = () => {
   return (
@@ -21,13 +22,22 @@ const RootNavigator = () => {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+
+      {/* All Protected Routes */}
       <Route element={<ProtectedRoute />}>
+        {/* Onboarding Route */}
+        <Route path="/onboarding" element={<OnboardingFlow />} />
+
+        {/* App Routes - require completed onboarding */}
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<WelcomeScreen />} />
           <Route path="/chat/:id" element={<ChatWindow />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/subscription" element={<SubscriptionPage />} />
-          <Route path="/subscription/success" element={<SubscriptionSuccessPage />} />
+          <Route
+            path="/subscription/success"
+            element={<SubscriptionSuccessPage />}
+          />
         </Route>
       </Route>
       <Route path="*" element={<NotFound />} />

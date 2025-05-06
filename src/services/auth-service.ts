@@ -45,6 +45,7 @@ export const authService = {
         data: {
           'full_name': userData.full_name,
           status: USER_STATUS.ACTIVE,
+          is_onboarding: false
         }
       },
     });
@@ -133,5 +134,26 @@ export const authService = {
       console.error('Error soft deleting user:', error);
       return { data: null, error };
     }
+  },
+
+  /**
+   * Check if the user needs to complete onboarding
+   * @returns Boolean indicating whether the user needs onboarding
+   */
+  async checkOnboardingStatus() {
+    const { data } = await supabaseClient.auth.getUser();
+    return data.user?.user_metadata?.is_onboarding === true;
+  },
+
+  /**
+   * Mark onboarding as completed for the user
+   * @returns Result of the update operation
+   */
+  async completeOnboarding() {
+    return await supabaseClient.auth.updateUser({
+      data: {
+        is_onboarding: true
+      }
+    });
   }
 };
