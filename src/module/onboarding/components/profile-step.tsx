@@ -157,6 +157,7 @@ export const ProfileStep = ({ onNext, onBack, initialData }: ProfileStepProps) =
                   <Button 
                     key={color}
                     variant="outline" 
+                    type="button"
                     onClick={() => setColorScheme(color)} 
                     className="cursor-pointer flex items-center gap-2"
                   >
