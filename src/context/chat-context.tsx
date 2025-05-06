@@ -37,7 +37,7 @@ interface ChatContextType {
   deleteChatSession: (sessionId: string) => Promise<boolean>;
   incrementQuestionCount: (sessionId: string) => Promise<void>;
   stopResponseStreaming: () => void;
-  contentRef: React.RefObject<HTMLDivElement>;
+  contentRef: React.RefObject<HTMLDivElement | null>;
   handlePrint: () => void;
 }
 
