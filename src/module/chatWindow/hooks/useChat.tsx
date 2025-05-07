@@ -182,13 +182,13 @@ export const useChat = () => {
             alt="User uploaded" 
             className="max-w-full max-h-60 object-contain rounded-md"
           />
-          {msg.text && <p>{msg.text}</p>}
+          {msg.text && <p className={msg.is_ai ? '' : "me-msg"}>{msg.text}</p>}
         </div>
       );
     } else if (msg.message_type === 'emoji') {
       return <p className="text-2xl">{msg.text}</p>;
     } else {
-      return <MarkdownRenderer>{msg.text}</MarkdownRenderer>;
+      return <MarkdownRenderer className={msg.is_ai ? '' : "me-msg"}>{msg.text}</MarkdownRenderer>;
     }
   }, []);
 

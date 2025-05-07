@@ -16,6 +16,9 @@ const usePrintPDF = () => {
         padding: 20px;
         margin: 0;
       }
+      .me-msg {
+        color: black;
+      }
       @page {
         @top-center {
           content: "ChatX";
