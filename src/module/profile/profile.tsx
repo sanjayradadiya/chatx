@@ -157,14 +157,9 @@ export default function Profile() {
                 <div className="flex items-start gap-3">
                   <CreditCard className="h-5 w-5 text-primary" />
                   <div>
-                    <p className="text-sm font-medium">Plan</p>
-                    <p className="text-sm text-muted-foreground">
-                      {subscription?.planName.replace("_", " ") || "Free"}
-                    </p>
-                  </div>
-                  <Popover>
+                    <p className="text-sm font-medium flex items-center gap-2"> <span>Plan</span> <Popover>
                     <PopoverTrigger asChild>
-                      <Info className="h-5 w-5 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
+                      <Info className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-primary transition-colors" />
                     </PopoverTrigger>
                     <PopoverContent className="w-80 p-0" align="end">
                       <div className="p-4 border-b">
@@ -192,7 +187,12 @@ export default function Profile() {
                         </div>
                       )}
                     </PopoverContent>
-                  </Popover>
+                  </Popover></p>
+                    <p className="text-sm text-muted-foreground">
+                      {subscription?.planName.replace("_", " ") || "Free"}
+                    </p>
+                  </div>
+                  
                 </div>
 
                 <div className="flex items-start gap-3">
