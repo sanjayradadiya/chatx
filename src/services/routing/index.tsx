@@ -17,6 +17,7 @@ import OnboardingFlow from "@/module/onboarding";
 const RootNavigator = () => {
   return (
     <Routes>
+      {/* Public Routes */}
       <Route path="/" element={<Login />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -28,7 +29,7 @@ const RootNavigator = () => {
         {/* Onboarding Route */}
         <Route path="/onboarding" element={<OnboardingFlow />} />
 
-        {/* App Routes - require completed onboarding */}
+        {/* App Routes */}
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<WelcomeScreen />} />
           <Route path="/chat/:id" element={<ChatWindow />} />

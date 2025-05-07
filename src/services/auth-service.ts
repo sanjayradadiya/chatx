@@ -106,10 +106,28 @@ export const authService = {
    * @returns Result of the sign-in operation
    */
   async signInWithAuthProvider(authProvider: Provider) {
+    // First check if the user exists and get their onboarding status
+    const { data: sessionData } = await supabaseClient.auth.getSession();
+    
+    // If user is already logged in, check their onboarding status
+    if (sessionData.session) {
+      const { data } = await supabaseClient.auth.getUser();
+      const isOnboardingCompleted = data.user?.user_metadata?.is_onboarding === true;
+      const redirectPath = isOnboardingCompleted ? '/dashboard' : '/onboarding';
+      
+      return await supabaseClient.auth.signInWithOAuth({
+        provider: authProvider,
+        options: {
+          redirectTo: `${window.location.origin}${redirectPath}`,
+        },
+      });
+    }
+    
+    // Default case for new or unknown users
     return await supabaseClient.auth.signInWithOAuth({
       provider: authProvider,
       options: {
-        redirectTo: `${window.location.origin}/dashboard`,
+        redirectTo: `${window.location.origin}/onboarding`,
       },
     });
   },

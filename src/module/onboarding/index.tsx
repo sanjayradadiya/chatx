@@ -5,6 +5,7 @@ import { authService } from "@/services/auth-service";
 import { ProfileStep } from "./components/profile-step";
 import { SubscriptionStep } from "./components/subscription-step";
 import { CompletionStep } from "./components/completion-step";
+import { useAuthProvider } from "@/context/auth-provider";
 
 // Onboarding steps
 enum OnboardingStep {
@@ -22,6 +23,7 @@ const OnboardingFlow = () => {
   });
   const [subscriptionPlan, setSubscriptionPlan] = useState("FREE");
   const navigate = useNavigate();
+  const { refreshUserData } = useAuthProvider();
 
   const handleNextStep = () => {
     setCurrentStep(prevStep => prevStep + 1);
@@ -51,6 +53,9 @@ const OnboardingFlow = () => {
 
       // Mark onboarding as completed
       await authService.completeOnboarding();
+      
+      // Refresh the user data in the auth context
+      await refreshUserData();
 
       // Redirect to dashboard
       navigate("/dashboard");

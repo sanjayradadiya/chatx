@@ -1,40 +1,37 @@
 import { useAuthProvider } from "@/context/auth-provider";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { LoadingScreen } from "@/components/ui/loading-screen";
-import { useEffect, useState } from "react";
-import { authService } from "@/services/auth-service";
 
 const ProtectedRoute = () => {
-  const { session, loading } = useAuthProvider();
-  const [isOnboarding, setIsOnboarding] = useState<boolean | null>(null);
-  const [onboardingLoading, setOnboardingLoading] = useState(true);
+  const { session, loading, isOnboardingComplete } = useAuthProvider();
+  const location = useLocation();
 
-  useEffect(() => {
-    const checkOnboarding = async () => {
-      if (session) {
-        const onboardingCompleted = await authService.checkOnboardingStatus();
-        setIsOnboarding(onboardingCompleted);
-      }
-      setOnboardingLoading(false);
-    };
-
-    checkOnboarding();
-  }, [session]);
-
-  // Show loading screen while authentication or onboarding check is in progress
-  if (loading || onboardingLoading) {
+  // Show loading screen while authentication is in progress
+  if (loading) {
     return <LoadingScreen message="Checking authentication..." />;
   }
 
-  // Redirect to login if not authenticated
-  if (session && isOnboarding) {
-    return <Outlet />;
-  } else if (session && isOnboarding === false) {
-    // Otherwise, show onboarding flow
-    return <Navigate to="/onboarding" replace />;
-  } else if (!session && isOnboarding === null) {
-    return <Navigate to="/" replace />;
+  // If not authenticated, redirect to login
+  if (!session) {
+    return <Navigate to="/" replace state={{ from: location }} />;
   }
+
+  // For authenticated users
+  const isDashboardRoute = location.pathname === "/dashboard";
+  const isOnboardingRoute = location.pathname === "/onboarding";
+
+  // Case 1: User is on dashboard but hasn't completed onboarding
+  if (isDashboardRoute && isOnboardingComplete === false) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Case 2: User is on onboarding but has completed onboarding
+  if (isOnboardingRoute && isOnboardingComplete === true) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // Allow access to the requested route
+  return <Outlet />;
 };
 
 export default ProtectedRoute;
