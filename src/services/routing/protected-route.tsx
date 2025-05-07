@@ -11,7 +11,7 @@ const ProtectedRoute = () => {
     return <LoadingScreen message="Checking authentication..." />;
   }
 
-  // If not authenticated, redirect to login
+  // If not authenticated, redirect to login with the current location
   if (!session) {
     return <Navigate to="/" replace state={{ from: location }} />;
   }

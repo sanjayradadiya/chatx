@@ -89,7 +89,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setSession(null);
       setCurrentUser(null);
       setIsOnboardingComplete(null);
-      navigate("/"); // redirect to login page after logout
+      navigate("/", { replace: true });
     }
   }, [navigate]);
 

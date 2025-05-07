@@ -4,16 +4,16 @@ import { useAuthProvider } from "@/context/auth-provider";
 import { authService } from "@/services/auth-service";
 import { Provider } from "@supabase/supabase-js";
 import { useCallback, useState } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { toast } from "sonner"
 
 
 const useAuth = (reset: () => void) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const { setCurrentUser } = useAuthProvider();
-
-  const navigate = useNavigate()
+  const { setCurrentUser, refreshUserData } = useAuthProvider();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const signInWithEmail = useCallback(async (loginData: LoginFormInput) => {
     try {
@@ -28,20 +28,28 @@ const useAuth = (reset: () => void) => {
       if (error) {
         throw new Error(error.message);
       } else {
+        // Update user data in auth context
         setCurrentUser(data.user);
-        navigate('/dashboard');
+        await refreshUserData();
+        
+        // Check onboarding status and redirect accordingly
+        const isOnboardingCompleted = data.user?.user_metadata?.is_onboarding === true;
+        const redirectPath = isOnboardingCompleted ? '/dashboard' : '/onboarding';
+        
+        // Use replace to prevent back button issues
+        navigate(redirectPath, { replace: true });
         setLoading(false);
       }
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error ? error.message : "Error deleting account";
+        error instanceof Error ? error.message : "Error during login";
       await authService.signOut();
       toast.error(errorMessage, {
         position: "top-center",
       });
       setLoading(false);
     }
-  }, [navigate, setCurrentUser]);
+  }, [navigate, location, setCurrentUser, refreshUserData]);
 
   const signUpNewUser = useCallback(async (signUpData: SignUpFormInput) => {
     try {
