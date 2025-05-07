@@ -54,11 +54,11 @@ const useAuth = (reset: () => void) => {
   const signUpNewUser = useCallback(async (signUpData: SignUpFormInput) => {
     try {
       setLoading(true);
-      const userExists = await authService.checkUserExists(signUpData.email);
+      const { error, userExists } = await authService.signUpWithEmail(signUpData);
+
       if (userExists) {
         throw new Error('User already exists.');
       }
-      const { error } = await authService.signUpWithEmail(signUpData);
 
       if (error) {
         throw new Error(error.message);
