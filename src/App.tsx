@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "./context/auth-provider";
 import { ChatProvider } from "./context/chat-context";
 import { ThemeProvider } from "./context/theme-provider";
+import { OnboardingLoaderProvider } from "./context/onboarding-loader-context";
 import { Analytics } from '@vercel/analytics/react';
 
 
@@ -16,10 +17,12 @@ function App() {
     >
       <BrowserRouter>
         <AuthProvider>
-          <ChatProvider>
-            <RootNavigator />
-            <Toaster />
-          </ChatProvider>
+          <OnboardingLoaderProvider>
+            <ChatProvider>
+              <RootNavigator />
+              <Toaster />
+            </ChatProvider>
+          </OnboardingLoaderProvider>
         </AuthProvider>
       </BrowserRouter>
       <Analytics />

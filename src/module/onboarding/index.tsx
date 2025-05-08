@@ -6,6 +6,8 @@ import { ProfileStep } from "./components/profile-step";
 import { SubscriptionStep } from "./components/subscription-step";
 import { CompletionStep } from "./components/completion-step";
 import { useAuthProvider } from "@/context/auth-provider";
+import { LoadingScreen } from "@/components/ui/loading-screen";
+import { useOnboardingLoader } from "@/context/onboarding-loader-context";
 
 // Onboarding steps
 enum OnboardingStep {
@@ -23,6 +25,7 @@ const OnboardingFlow = () => {
   });
   const navigate = useNavigate();
   const { refreshUserData } = useAuthProvider();
+  const { isLoading } = useOnboardingLoader();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -103,11 +106,14 @@ const OnboardingFlow = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="w-full max-w-4xl p-6 mx-auto">
-        {renderStep()}
+    <>
+      {isLoading && <LoadingScreen message="Checking authentication..." />}
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="w-full max-w-4xl p-6 mx-auto">
+          {renderStep()}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

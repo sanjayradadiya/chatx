@@ -5,7 +5,8 @@ import { SubscriptionCard } from "@/module/subscription/components/subscription-
 import { SUBSCRIPTION_PLANS } from "@/config/constant";
 import { isLowerTierPlan } from "@/lib/subscription-utils";
 import { SUBSCRIPTION_PLAN } from "@/config/enum";
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
+import { useOnboardingLoader } from "@/context/onboarding-loader-context";
 
 interface SubscriptionStepProps {
   onNext: (plan: string) => void;
@@ -14,9 +15,15 @@ interface SubscriptionStepProps {
 
 export const SubscriptionStep = ({ onNext, onBack }: SubscriptionStepProps) => {
   const { subscription, loading, handleSubscription } = useSubscription();
+  const { setIsLoading } = useOnboardingLoader();
+
+  // Ensure the onboarding loader is turned off when landing on this page
+  useEffect(() => {
+    setIsLoading(false);
+  }, [setIsLoading]);
 
   const handleSelectPlan = useCallback(async (planType: string, isOnboarding: boolean) => {
-    // If plan requires payment, redirect to subscription page
+    // If plan requires payment, redirect to subscription page and show loader
     if (planType !== "FREE") {
       // Redirect to subscription handling
       await handleSubscription(planType as SUBSCRIPTION_PLAN, isOnboarding);
