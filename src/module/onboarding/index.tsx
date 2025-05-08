@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { WelcomeStep } from "./components/welcome-step";
 import { useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth-service";
@@ -21,9 +21,16 @@ const OnboardingFlow = () => {
     fullName: '',
     avatarUrl: '',
   });
-  const [subscriptionPlan, setSubscriptionPlan] = useState("FREE");
   const navigate = useNavigate();
   const { refreshUserData } = useAuthProvider();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const onboardingStep = params.get("on_boarding_step");
+    if (onboardingStep) {
+      setCurrentStep(parseInt(onboardingStep));
+    }
+  }, []);
 
   const handleNextStep = () => {
     setCurrentStep(prevStep => prevStep + 1);
@@ -38,8 +45,7 @@ const OnboardingFlow = () => {
     handleNextStep();
   };
 
-  const handleSubscriptionSelect = (plan: string) => {
-    setSubscriptionPlan(plan);
+  const handleSubscriptionSelect = () => {
     handleNextStep();
   };
 
@@ -81,7 +87,6 @@ const OnboardingFlow = () => {
           <SubscriptionStep 
             onNext={handleSubscriptionSelect} 
             onBack={handlePreviousStep}
-            selectedPlan={subscriptionPlan}
           />
         );
       case OnboardingStep.COMPLETION:
@@ -90,7 +95,6 @@ const OnboardingFlow = () => {
             onComplete={handleCompleteOnboarding} 
             onBack={handlePreviousStep}
             profileData={profileData}
-            subscriptionPlan={subscriptionPlan}
           />
         );
       default:

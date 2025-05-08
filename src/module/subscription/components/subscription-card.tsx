@@ -15,6 +15,7 @@ interface SubscriptionCardProps {
   features: string[];
   isPro?: boolean;
   isCurrentPlan?: boolean;
+  isOnboarding?: boolean;
   loading?: boolean;
   onSubscribe: () => void;
   isDisplayButton?: boolean;
@@ -29,6 +30,7 @@ export function SubscriptionCard({
   features,
   isPro = false,
   isCurrentPlan = false,
+  isOnboarding = false,
   loading = false,
   onSubscribe,
   isDisplayButton = false,
@@ -54,7 +56,7 @@ export function SubscriptionCard({
       <CardHeader className="p-6 pb-0">
         <div className="flex items-center justify-between">
           <div className="text-2xl font-bold">{title}</div>
-          {isCurrentPlan && (
+          {isCurrentPlan && !isOnboarding && (
             <div className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-md">
               Current Plan
             </div>

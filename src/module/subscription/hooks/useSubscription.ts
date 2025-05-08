@@ -44,13 +44,14 @@ export const useSubscription = () => {
     };
 
     fetchSubscription();
-  }, [currentUser]);
+  }, []);
 
   useEffect(() => {
     // Extract query parameters
     const params = new URLSearchParams(location.search);
     const sessionId = params.get("session_id");
     const plan = params.get("plan");
+    const isOnboarding = params.get("isOnboarding");
 
     if (!sessionId || !plan || processed || processingRef.current || !currentUser) {
       return;
@@ -62,7 +63,6 @@ export const useSubscription = () => {
       processingRef.current = true;
       try {
         setLoading(true);
-        
         // Update the subscription in the database
         await subscriptionService.updateUserSubscription(currentUser.id, plan);
         
@@ -73,6 +73,11 @@ export const useSubscription = () => {
         toast.success(`Successfully subscribed to the ${plan.replace('_', ' ')} plan`, {
           position: "top-center",
         });
+
+        if (isOnboarding === "true") {
+          window.location.href = `/onboarding?on_boarding_step=2`;
+        }
+
         setProcessed(true);
       } catch (error) {
         console.error("Error handling subscription success:", error);
@@ -91,7 +96,7 @@ export const useSubscription = () => {
    * Handle subscription
    * @param planName The name of the plan to subscribe to
    */
-  const handleSubscription = useCallback((planName: SUBSCRIPTION_PLAN) => {
+  const handleSubscription = useCallback((planName: SUBSCRIPTION_PLAN, isOnboarding?: boolean) => {
     if (planName === SUBSCRIPTION_PLAN.FREE) {
       subscribeToFreePlan();
     } else if (planName === SUBSCRIPTION_PLAN.CUSTOM) {
@@ -99,7 +104,7 @@ export const useSubscription = () => {
         position: "top-center",
       });
     } else {
-      subscribeToPaidPlan(planName);
+      subscribeToPaidPlan(planName, isOnboarding);
     }
   }, []);
 
@@ -136,7 +141,7 @@ export const useSubscription = () => {
    * Subscribe to a paid plan
    * @param planName The name of the plan to subscribe to
    */
-  const subscribeToPaidPlan = useCallback(async (planName: string) => {
+  const subscribeToPaidPlan = useCallback(async (planName: string, isOnboarding: boolean = false) => {
     if (!currentUser) {
       toast.error("You must be logged in to subscribe", {
         position: "top-center",
@@ -155,12 +160,14 @@ export const useSubscription = () => {
       // Create a checkout session and redirect to Stripe
       const successUrl = `${window.location.origin}/subscription/success`;
       const cancelUrl = `${window.location.origin}/subscription`;
+      const onboardingUrl = `${window.location.origin}/onboarding`;
 
       const checkoutUrl = await subscriptionService.createCheckoutSession(
         currentUser.id,
         planName,
-        successUrl,
-        cancelUrl
+        isOnboarding ? onboardingUrl : successUrl,
+        isOnboarding ? onboardingUrl : cancelUrl,
+        isOnboarding
       );
 
       // Redirect to Stripe checkout

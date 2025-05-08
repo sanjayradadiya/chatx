@@ -19,14 +19,12 @@ interface CompletionStepProps {
     fullName: string;
     avatarUrl: string;
   };
-  subscriptionPlan: string;
 }
 
 export const CompletionStep = ({
   onComplete,
   onBack,
   profileData,
-  subscriptionPlan,
 }: CompletionStepProps) => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -40,7 +38,7 @@ export const CompletionStep = ({
    // Get theme context
    const { theme, colorScheme } = useTheme();
 
-  const planType = subscriptionPlan || subscription?.planName || SUBSCRIPTION_PLAN.FREE;
+  const planType = subscription?.planName || SUBSCRIPTION_PLAN.FREE;
   const planDetails = SUBSCRIPTION_PLANS.find((plan) => plan.type === planType) || SUBSCRIPTION_PLANS[0];
 
   const handleSubmit = async () => {

@@ -81,7 +81,8 @@ export const subscriptionService = {
     userId: string,
     planName: string,
     successUrl: string,
-    cancelUrl: string
+    cancelUrl: string,
+    isOnboarding: boolean
   ): Promise<string> {
     const plan = SUBSCRIPTION_PLANS.find((p) => p.type === planName);
     
@@ -106,7 +107,7 @@ export const subscriptionService = {
         },
       ],
       mode: "payment",
-      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}&plan=${planName}`,
+      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}&plan=${planName}${isOnboarding ? `&isOnboarding=${isOnboarding}` : ""}`,
       cancel_url: cancelUrl,
       metadata: {
         userId,
