@@ -7,6 +7,7 @@ import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-render
 import { useChat } from "./hooks/useChat";
 import { Link, useParams } from "react-router";
 import { useEffect } from "react";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const ChatWindow = () => {
   const {
@@ -35,8 +36,12 @@ const ChatWindow = () => {
     clearSelectedFile,
     stopResponseStreaming,
     contentRef,
+    currentSession,
   } = useChat();
   const { id } = useParams();
+
+  // Set the page title based on the current chat session
+  usePageTitle(currentSession?.title || "Chat", "Chat with AI assistant", true);
 
   useEffect(() => {
     // Scroll if streaming messages are coming in

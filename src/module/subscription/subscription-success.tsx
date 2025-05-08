@@ -2,11 +2,14 @@ import { useSubscription } from "@/module/subscription/hooks/useSubscription";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2Icon, Loader2Icon } from "lucide-react";
 import { useNavigate } from "react-router";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const SubscriptionSuccess = () => {
+  // Set the page title
+  usePageTitle("Subscription Success");
+
   const { loading, processed } = useSubscription();
   const navigate = useNavigate();
-
 
   return (
     <div className="container max-w-2xl mx-auto py-16 px-4">

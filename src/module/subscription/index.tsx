@@ -4,8 +4,12 @@ import { SubscriptionCard } from "./components/subscription-card";
 import { SUBSCRIPTION_PLANS } from "@/config/constant";
 import { isLowerTierPlan } from "@/lib/subscription-utils";
 import { SUBSCRIPTION_PLAN } from "@/config/enum";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 const Subscription = () => {
+  // Set the page title
+  usePageTitle("Subscription");
+  
   const { currentUser } = useAuthProvider();
   const { subscription, loading, handleSubscription } = useSubscription();
 

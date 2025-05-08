@@ -218,6 +218,7 @@ export const useChat = () => {
     handleFileButtonClick,
     clearSelectedFile,
     stopResponseStreaming,
-    contentRef
+    contentRef,
+    currentSession,
   };
 }; 

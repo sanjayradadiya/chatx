@@ -29,8 +29,12 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { usePageTitle } from "@/hooks/use-page-title";
 
 export default function Profile() {
+  // Set the page title
+  usePageTitle("Profile");
+  
   const { subscription, handleUpdatePlan } =
     useSubscription();
   const {
