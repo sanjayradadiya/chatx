@@ -53,8 +53,8 @@ const ContactPage = () => {
                   </div>
                   <div>
                     <h3 className="font-medium">Phone Support</h3>
-                    <p className="text-muted-foreground mt-1">Our support line is available Monday-Friday, 9 AM - 6 PM EST</p>
-                    <p className="text-primary mt-2">+1 (555) 123-4567</p>
+                    <p className="text-muted-foreground mt-1">Our support line is available Monday-Friday, 9 AM - 6 PM</p>
+                    <p className="text-primary mt-2">+91 9999999999</p>
                   </div>
                 </div>
                 
