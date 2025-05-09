@@ -13,12 +13,14 @@ import ProfilePage from "@/pages/profile/profile-page";
 import SubscriptionPage from "@/pages/subscription/subscription-page";
 import SubscriptionSuccessPage from "@/pages/subscription/subscription-success-page";
 import OnboardingFlow from "@/module/onboarding";
+import WelcomePage from "@/pages/welcome/welcome-page";
 
 const RootNavigator = () => {
   return (
     <Routes>
       {/* Public Routes */}
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={<WelcomePage />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />

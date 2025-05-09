@@ -14,6 +14,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     ],
     isPro: false,
     isDisplayButton: false,
+    isPopular: false,
   },
   {
     type: SUBSCRIPTION_PLAN.PRO_BASIC,
@@ -25,6 +26,7 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     buttonText: "Upgrade",
     isPro: true,
     isDisplayButton: true,
+    isPopular: true,
   },
   {
     type: SUBSCRIPTION_PLAN.PRO_PLUS,
@@ -36,12 +38,12 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
       "5 response per chat",
       "Premium support",
       "Advanced AI responses",
-      "Custom chat templates",
     ],
     priceId: "price_test_pro_plus",
     buttonText: "Upgrade",
     isPro: true,
     isDisplayButton: true,
+    isPopular: false,
   },
   {
     type: SUBSCRIPTION_PLAN.CUSTOM,
@@ -49,11 +51,11 @@ export const SUBSCRIPTION_PLANS: SubscriptionPlan[] = [
     price: 99.99,
     description: "Custom plan for your business",
     features: ["Unlimited chats", "Unlimited responses", "Priority support", "Advanced AI responses",
-      "Custom chat templates",
       "Data export",],
     priceId: "price_test_pro_enterprise",
     buttonText: "Contact Support",
     isPro: true,
-    isDisplayButton: true,
+    isDisplayButton: true,  
+    isPopular: false,
   }
 ];
