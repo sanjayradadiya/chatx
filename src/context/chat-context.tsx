@@ -15,6 +15,7 @@ import { aiService } from "@/services/ai-service";
 import { hasReachedQuestionLimit, getQuestionLimit } from "@/lib/subscription-utils";
 import { useSubscription } from "@/module/subscription/hooks/useSubscription";
 import usePrintPDF from "../hooks/use-print-pdf";
+import { SUBSCRIPTION_PLAN } from "@/config/enum";
 
 interface ChatContextType {
   chatSessions: ChatSession[];
@@ -86,7 +87,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   // Calculate if user has reached their question limit
   const hasReachedLimit = useMemo(() => {
     return subscription 
-      ? hasReachedQuestionLimit(subscription.planName, userQuestionCount)
+      ? hasReachedQuestionLimit(subscription.planName || SUBSCRIPTION_PLAN.FREE, userQuestionCount)
       : true;
   },[subscription, userQuestionCount]);
     

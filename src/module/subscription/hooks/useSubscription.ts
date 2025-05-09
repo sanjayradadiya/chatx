@@ -44,7 +44,7 @@ export const useSubscription = () => {
     };
 
     fetchSubscription();
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
     // Extract query parameters
