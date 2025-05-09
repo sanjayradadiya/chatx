@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import Layout from "@/components/layout/Layout";
+import { toast } from "sonner";
 
 const FaqPage = () => {
   const faqs = [
@@ -34,6 +35,12 @@ const FaqPage = () => {
     },
   ];
 
+  const handleVisitHelpCenter = () => {
+    toast.success("This feature is not available yet.", {
+      duration: 3000,
+      position: "top-center",
+    });
+  }
   return (
     <Layout>
       <section className="py-16">
@@ -44,7 +51,7 @@ const FaqPage = () => {
               Find answers to the most common questions about ChatX and how to make the most of your experience.
             </p>
           </div>
-          
+
           <div className="max-w-3xl mx-auto space-y-6">
             {faqs.map((faq, index) => (
               <div key={index} className="border border-border rounded-lg p-6">
@@ -61,11 +68,9 @@ const FaqPage = () => {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/contact">
-                <Button variant="default">Contact Support</Button>
+                <Button variant="default" className="cursor-pointer">Contact Support</Button>
               </Link>
-              <Link to="/help">
-                <Button variant="outline">Visit Help Center</Button>
-              </Link>
+              <Button variant="outline" className="cursor-pointer" onClick={handleVisitHelpCenter}>Visit Help Center</Button>
             </div>
           </div>
         </div>

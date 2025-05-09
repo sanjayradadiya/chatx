@@ -39,7 +39,7 @@ const ContactPage = () => {
                     placeholder="Please describe your question or issue in detail"
                   />
                 </div>
-                <Button type="submit" className="w-full">Send Message</Button>
+                <Button type="submit" className="w-full cursor-pointer">Send Message</Button>
               </form>
             </div>
             

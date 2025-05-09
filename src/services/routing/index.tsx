@@ -29,15 +29,12 @@ const RootNavigator = () => {
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
-      <Route path="/terms-and-conditions" element={<TermsPage />} />
-      
-      {/* New Public Pages */}
       <Route path="/pricing" element={<PricingPage />} />
       <Route path="/about" element={<AboutPage />} />
       <Route path="/faq" element={<FaqPage />} />
       <Route path="/contact" element={<ContactPage />} />
-      <Route path="/terms" element={<TermsPage />} />
-      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/terms-and-conditions" element={<TermsPage />} />
+      <Route path="/privacy-policy" element={<PrivacyPage />} />
 
       {/* All Protected Routes */}
       <Route element={<ProtectedRoute />}>

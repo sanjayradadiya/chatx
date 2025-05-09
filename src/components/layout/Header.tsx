@@ -16,7 +16,7 @@ const Header = () => {
                 <nav className="hidden md:flex items-center gap-6">
                     <Link to="/login" className="text-sm hover:underline">Login</Link>
                     <Link to="/signup">
-                        <Button size="sm">Register</Button>
+                        <Button size="sm" className="cursor-pointer">Register</Button>
                     </Link>
                 </nav>
                 <Button variant="ghost" size="icon" className="md:hidden">

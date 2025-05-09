@@ -22,10 +22,10 @@ const WelcomePage = () => {
             </p>
             <div className="flex gap-4">
               <Link to="/pricing">
-                <Button size="lg">View Plans</Button>
+                <Button size="lg" className="cursor-pointer">View Plans</Button>
               </Link>
               <Link to="/signup">
-                <Button size="lg" variant="outline">Get Started</Button>
+                <Button size="lg" variant="outline" className="cursor-pointer">Get Started</Button>
               </Link>
             </div>
           </div>

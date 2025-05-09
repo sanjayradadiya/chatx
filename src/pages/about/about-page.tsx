@@ -83,7 +83,7 @@ const AboutPage = () => {
               Join thousands of users who are already enjoying the benefits of AI-powered conversations.
             </p>
             <Link to="/signup">
-              <Button size="lg">Get Started for Free</Button>
+              <Button size="lg" className="cursor-pointer">Get Started for Free</Button>
             </Link>
           </div>
         </div>
