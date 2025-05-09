@@ -29,6 +29,7 @@ interface ChatContextType {
   userQuestionCount: number;
   hasReachedLimit: boolean;
   questionLimit: number;
+  hasEmptySessions: boolean;
   fetchChatSessions: () => Promise<void>;
   createNewChat: () => Promise<ChatSession | null>;
   selectChatSession: (sessionId: string) => Promise<void>;
@@ -54,6 +55,7 @@ const ChatContext = createContext<ChatContextType>({
   userQuestionCount: 0,
   hasReachedLimit: true,
   questionLimit: 0,
+  hasEmptySessions: false,
   fetchChatSessions: async () => {},
   createNewChat: async () => null,
   selectChatSession: async () => {},
@@ -79,10 +81,16 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [streamingMessage, setStreamingMessage] = useState<string>("");
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [userQuestionCount, setUserQuestionCount] = useState<number>(0);
+  const [emptySessions, setEmptySessions] = useState<Set<string>>(new Set());
   const { session } = useAuthProvider();
   const { subscription } = useSubscription();
   const abortControllerRef = useRef<AbortController | null>(null);
   const { contentRef, handlePrint } = usePrintPDF();
+
+  // Simple check if we have any empty sessions
+  const hasEmptySessions = useMemo(() => {
+    return emptySessions.size > 0;
+  }, [emptySessions]);
 
   // Calculate if user has reached their question limit
   const hasReachedLimit = useMemo(() => {
@@ -105,6 +113,19 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         try {
           const sessions = await chatService.getChatSessions(session.user.id);
           setChatSessions(sessions);
+          
+          // Initialize empty sessions tracking
+          const emptySessionIds = new Set<string>();
+          
+          // Only check session message counts on initial load
+          for (const session of sessions) {
+            const sessionMessages = await chatService.getChatMessages(session.id);
+            if (sessionMessages.length === 0) {
+              emptySessionIds.add(session.id);
+            }
+          }
+          
+          setEmptySessions(emptySessionIds);
         } catch (error) {
           console.error("Failed to initialize chat sessions:", error);
         } finally {
@@ -144,7 +165,13 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         setCurrentSession(newSession);
         setUserQuestionCount(newSession.questions_count || 0);
         setMessages([]);
-        setIsNewChatSession(false);
+        
+        // Add the new session to empty sessions since it has no messages
+        setEmptySessions(prev => {
+          const newSet = new Set(prev);
+          newSet.add(newSession.id);
+          return newSet;
+        });
       }
 
       return newSession;
@@ -173,6 +200,20 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           // Fetch messages for this session
           const sessionMessages = await chatService.getChatMessages(sessionId);
           setMessages(sessionMessages);
+          
+          // Update empty sessions tracking only for this session
+          setEmptySessions(prev => {
+            const newSet = new Set(prev);
+            if (sessionMessages.length === 0) {
+              newSet.add(sessionId);
+            } else {
+              newSet.delete(sessionId);
+            }
+            return newSet;
+          });
+          
+          // If the selected session has messages, it's not a new session
+          setIsNewChatSession(sessionMessages.length === 0);
         } else {
           console.error("Session not found:", sessionId);
         }
@@ -188,7 +229,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const sendMessage = useCallback(
     async (text: string, messageType: MessageType = "text") => {
       if (!session?.user.id || !currentSession) return;
-      setIsNewChatSession(false); // when message send first time
+      setIsNewChatSession(false); // Always set to false when a message is sent
       setLoading(true);
       
       // Send user message
@@ -201,6 +242,14 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
 
       if (userMessage) {
         setMessages((prev) => [...prev, userMessage]);
+        
+        // Remove current session from empty sessions when a message is sent
+        setEmptySessions(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(currentSession.id);
+          return newSet;
+        });
+        
         setIsStreaming(true);
         setLoading(false);
         setStreamingMessage("");
@@ -255,6 +304,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
       if (!session?.user.id || !currentSession) return;
 
       setLoading(true);
+      setIsNewChatSession(false); // Always set to false when an image is sent
 
       try {
         // Send user image message
@@ -266,7 +316,15 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         );
 
         if (userMessage) {
-          setMessages((prev) => [...prev, userMessage]);          
+          setMessages((prev) => [...prev, userMessage]);
+          
+          // Remove current session from empty sessions when an image is sent
+          setEmptySessions(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(currentSession.id);
+            return newSet;
+          });
+          
           setIsStreaming(true);
           setStreamingMessage("");
           
@@ -359,10 +417,18 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           // Remove the session from the local state
           setChatSessions(prev => prev.filter(session => session.id !== sessionId));
           
+          // Remove the session from empty sessions tracking
+          setEmptySessions(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(sessionId);
+            return newSet;
+          });
+          
           // If the deleted session was the current one, clear current session
           if (currentSession?.id === sessionId) {
             setCurrentSession(null);
             setMessages([]);
+            setIsNewChatSession(false);
           }
           
           return true;
@@ -412,6 +478,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         userQuestionCount,
         hasReachedLimit,
         questionLimit,
+        hasEmptySessions,
         fetchChatSessions,
         createNewChat,
         selectChatSession,

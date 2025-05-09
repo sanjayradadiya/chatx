@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function ChatList() {
-  const { chatSessions, fetchChatSessions, createNewChat, isNewChatSession, deleteChatSession } =
+  const { chatSessions, fetchChatSessions, createNewChat, isNewChatSession, deleteChatSession, hasEmptySessions } =
     useChatContext();
   const navigate = useNavigate();
   const { id } = useParams();
@@ -74,7 +74,7 @@ export function ChatList() {
             variant="outline"
             className="w-full justify-start cursor-pointer"
             onClick={handleNewChat}
-            disabled={isNewChatSession}
+            disabled={isNewChatSession || hasEmptySessions}
           >
             <Plus className="mr-2 h-4 w-4" />
             New Chat
