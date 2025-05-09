@@ -180,7 +180,7 @@ const WelcomePage = () => {
                     </ul>
                   </CardContent>
                   <CardFooter>
-                    <Link to="/login" className="w-full cursor-pointer">
+                    <Link to="/signup" className="w-full cursor-pointer">
                       <Button variant={"default"} className="w-full cursor-pointer">
                         Get Started
                       </Button>
