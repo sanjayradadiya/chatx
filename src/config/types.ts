@@ -52,4 +52,5 @@ export type SubscriptionPlan = {
   buttonText?: string;
   isPro: boolean;
   isDisplayButton: boolean;
+  isPopular?: boolean;
 };
