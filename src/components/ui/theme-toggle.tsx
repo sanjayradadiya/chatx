@@ -11,13 +11,13 @@ import {
 import { useTheme } from "@/context/theme-provider";
 import { ColorThemeSelector } from "./color-theme-selector";
 
-export function ThemeToggle() {
+export function ThemeToggle({ displayThemeColor = true }: { displayThemeColor?: boolean }) {
   const { setTheme } = useTheme();
 
   return (
     <div className="flex items-center gap-1">
-      <ColorThemeSelector />
-      
+      {displayThemeColor && <ColorThemeSelector />}
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon">
@@ -29,7 +29,7 @@ export function ThemeToggle() {
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>Appearance</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          
+
           <DropdownMenuItem onClick={() => setTheme("light")}>
             Light
           </DropdownMenuItem>

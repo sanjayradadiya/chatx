@@ -15,7 +15,7 @@ const AboutPage = () => {
               We're on a mission to make AI chat technology accessible and helpful to everyone.
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-12 items-center mb-16">
             <div>
               <h2 className="text-2xl font-semibold mb-4">Our Story</h2>
@@ -23,7 +23,7 @@ const AboutPage = () => {
                 ChatX was born out of a simple realization: AI chatbots were becoming more powerful, but they weren't always easy to use or accessible to everyone. We set out to change that.
               </p>
               <p className="text-muted-foreground mb-4">
-                Founded in 2023, our team of AI researchers, developers, and designers has been working tirelessly to create an AI chat platform that's intuitive, secure, and genuinely helpful for day-to-day tasks.
+                Founded in 2025, our team of AI researchers, developers, and designers has been working tirelessly to create an AI chat platform that's intuitive, secure, and genuinely helpful for day-to-day tasks.
               </p>
               <p className="text-muted-foreground">
                 Today, ChatX is used by thousands of people around the world, from students and professionals to businesses and organizations of all sizes.
@@ -74,19 +74,6 @@ const AboutPage = () => {
                   </p>
                 </CardContent>
               </Card>
-            </div>
-          </div>
-
-          <div className="mb-16">
-            <h2 className="text-2xl font-semibold mb-8 text-center">Meet Our Team</h2>
-            <div className="grid md:grid-cols-4 gap-8">
-              {[1, 2, 3, 4].map((person) => (
-                <div key={person} className="text-center">
-                  <div className="w-32 h-32 rounded-full bg-muted/60 mx-auto mb-4"></div>
-                  <h3 className="font-medium">Team Member {person}</h3>
-                  <p className="text-sm text-muted-foreground">Position</p>
-                </div>
-              ))}
             </div>
           </div>
 
