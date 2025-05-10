@@ -13,7 +13,7 @@ const ProtectedRoute = () => {
 
   // If not authenticated, redirect to login with the current location
   if (!session) {
-    return <Navigate to="/" replace state={{ from: location }} />;
+    return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
   // For authenticated users

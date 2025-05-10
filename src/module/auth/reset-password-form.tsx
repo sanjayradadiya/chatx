@@ -32,7 +32,7 @@ const ResetPasswordForm = () => {
         toast.success("Password updated successfully!", {
           position: "top-center",
         });
-        navigate("/");
+        navigate("/login");
       }
     } catch (err) {
       toast.error("An error occurred while resetting your password.", {
