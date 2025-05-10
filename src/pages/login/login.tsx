@@ -1,6 +1,7 @@
 import LoginForm from "@/module/auth/login-from";
 import { useAuthProvider } from "@/context/auth-provider";
 import { Navigate } from "react-router-dom";
+import Header from "@/components/layout/Header";
 
 const Login = () => {
   const { session, isOnboardingComplete, loading } = useAuthProvider();
@@ -14,9 +15,12 @@ const Login = () => {
   }
   
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-muted p-6 md:p-10">
-      <div className="w-full max-w-sm md:max-w-3xl">
-        <LoginForm />
+    <div className="flex flex-col min-h-svh bg-muted">
+      <Header isAuthPage={false} />
+      <div className="flex flex-1 items-center justify-center p-6 md:p-10">
+        <div className="w-full max-w-sm md:max-w-3xl">
+          <LoginForm />
+        </div>
       </div>
     </div>
   );
