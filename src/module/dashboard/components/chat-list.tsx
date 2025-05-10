@@ -18,8 +18,17 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export function ChatList() {
-  const { chatSessions, fetchChatSessions, createNewChat, isNewChatSession, deleteChatSession, hasEmptySessions } =
-    useChatContext();
+  const { 
+    chatSessions, 
+    fetchChatSessions, 
+    createNewChat, 
+    isNewChatSession, 
+    deleteChatSession, 
+    hasEmptySessions,
+    dailyChatCount,
+    dailyChatLimit,
+    hasReachedDailyChatLimit
+  } = useChatContext();
   const navigate = useNavigate();
   const { id } = useParams();
   const [hoveredChatId, setHoveredChatId] = useState<string | null>(null);
@@ -72,12 +81,15 @@ export function ChatList() {
         <div className="space-y-1">
           <Button
             variant="outline"
-            className="w-full justify-start cursor-pointer"
+            className="w-full justify-start cursor-pointer relative"
             onClick={handleNewChat}
             disabled={isNewChatSession || hasEmptySessions}
           >
             <Plus className="mr-2 h-4 w-4" />
             New Chat
+            <span className={`ml-auto px-2 py-0.5 text-xs rounded-full ${hasReachedDailyChatLimit ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
+              {dailyChatCount}/{dailyChatLimit}
+            </span>
           </Button>
         </div>
       </div>

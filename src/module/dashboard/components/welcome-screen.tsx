@@ -5,7 +5,13 @@ import { useChatContext } from "@/context/chat-context";
 import { useNavigate } from "react-router";
 
 export function WelcomeScreen() {
-  const { createNewChat, hasEmptySessions } = useChatContext();
+  const { 
+    createNewChat, 
+    hasEmptySessions, 
+    dailyChatCount, 
+    dailyChatLimit, 
+    hasReachedDailyChatLimit 
+  } = useChatContext();
   const navigate = useNavigate();
 
   const handleNewChat = async () => {
@@ -64,9 +70,16 @@ export function WelcomeScreen() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button onClick={handleNewChat} className="w-full gap-2" disabled={hasEmptySessions}>
+          <Button 
+            onClick={handleNewChat} 
+            className="w-full gap-2 relative" 
+            disabled={hasEmptySessions}
+          >
             <Plus className="h-4 w-4" />
             Start a New Chat
+            <span className={`absolute right-3 px-2 py-0.5 text-xs rounded-full ${hasReachedDailyChatLimit ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-700'}`}>
+              {dailyChatCount}/{dailyChatLimit}
+            </span>
           </Button>
         </CardFooter>
       </Card>

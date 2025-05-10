@@ -15,7 +15,7 @@ import { aiService } from "@/services/ai-service";
 import { hasReachedQuestionLimit, getQuestionLimit } from "@/lib/subscription-utils";
 import { useSubscription } from "@/module/subscription/hooks/useSubscription";
 import usePrintPDF from "../hooks/use-print-pdf";
-import { SUBSCRIPTION_PLAN } from "@/config/enum";
+import { dailyChatLimitService } from "@/services/daily-chat-limit-service";
 
 interface ChatContextType {
   chatSessions: ChatSession[];
@@ -30,6 +30,9 @@ interface ChatContextType {
   hasReachedLimit: boolean;
   questionLimit: number;
   hasEmptySessions: boolean;
+  dailyChatCount: number;
+  dailyChatLimit: number;
+  hasReachedDailyChatLimit: boolean;
   fetchChatSessions: () => Promise<void>;
   createNewChat: () => Promise<ChatSession | null>;
   selectChatSession: (sessionId: string) => Promise<void>;
@@ -56,6 +59,9 @@ const ChatContext = createContext<ChatContextType>({
   hasReachedLimit: true,
   questionLimit: 0,
   hasEmptySessions: false,
+  dailyChatCount: 0,
+  dailyChatLimit: 3, // Default to FREE plan limit
+  hasReachedDailyChatLimit: false,
   fetchChatSessions: async () => {},
   createNewChat: async () => null,
   selectChatSession: async () => {},
@@ -82,6 +88,8 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [userQuestionCount, setUserQuestionCount] = useState<number>(0);
   const [emptySessions, setEmptySessions] = useState<Set<string>>(new Set());
+  const [dailyChatCount, setDailyChatCount] = useState<number>(0);
+  const [dailyChatLimit, setDailyChatLimit] = useState<number>(3); // Default to FREE plan limit
   const { session } = useAuthProvider();
   const { subscription } = useSubscription();
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -92,64 +100,68 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     return emptySessions.size > 0;
   }, [emptySessions]);
 
-  // Calculate if user has reached their question limit
+  // Check if user has reached their question limit
   const hasReachedLimit = useMemo(() => {
-    return subscription 
-      ? hasReachedQuestionLimit(subscription.planName || SUBSCRIPTION_PLAN.FREE, userQuestionCount)
-      : true;
-  },[subscription, userQuestionCount]);
-    
-  // Get the question limit for the user's plan
+    return hasReachedQuestionLimit(subscription?.planName, userQuestionCount);
+  }, [subscription, userQuestionCount]);
+
+  // Check if user has reached their daily chat limit
+  const hasReachedDailyChatLimit = useMemo(() => {
+    return dailyChatCount >= dailyChatLimit;
+  }, [dailyChatCount, dailyChatLimit]);
+
+  // Get the question limit based on subscription
   const questionLimit = useMemo(() => {
-    return subscription 
-      ? getQuestionLimit(subscription.planName)
-      : getQuestionLimit(undefined);
-  },[subscription]);
+    return getQuestionLimit(subscription?.planName);
+  }, [subscription]);
 
-  // Automatically load sessions when authenticated
-  useEffect(() => {
-    if (session?.user.id) {
-      const initializeChats = async () => {
-        try {
-          const sessions = await chatService.getChatSessions(session.user.id);
-          setChatSessions(sessions);
-          
-          // Initialize empty sessions tracking
-          const emptySessionIds = new Set<string>();
-          
-          // Only check session message counts on initial load
-          for (const session of sessions) {
-            const sessionMessages = await chatService.getChatMessages(session.id);
-            if (sessionMessages.length === 0) {
-              emptySessionIds.add(session.id);
-            }
-          }
-          
-          setEmptySessions(emptySessionIds);
-        } catch (error) {
-          console.error("Failed to initialize chat sessions:", error);
-        } finally {
-          setIsInitializing(false);
-        }
-      };
+  // Fetch daily chat count information
+  const fetchDailyChatInfo = useCallback(async () => {
+    if (!session?.user.id) return;
 
-      initializeChats();
-    } else {
-      setIsInitializing(false);
+    try {
+      const result = await dailyChatLimitService.validateChatCreation(session.user.id);
+      setDailyChatCount(result.currentCount);
+      setDailyChatLimit(result.limit);
+    } catch (error) {
+      console.error("Error fetching daily chat info:", error);
     }
-  }, [session?.user.id]);
+  }, [session]);
 
+  // Fetch chat sessions from the server
   const fetchChatSessions = useCallback(async () => {
     if (!session?.user.id) return;
 
-    setLoading(true);
     try {
       const sessions = await chatService.getChatSessions(session.user.id);
       setChatSessions(sessions);
-    } finally {
-      setLoading(false);
+      
+      // Track which sessions are empty (no messages)
+      const emptySessionsSet = new Set<string>();
+      
+      // For each session, check if it has messages
+      for (const chatSession of sessions) {
+        const messages = await chatService.getChatMessages(chatSession.id);
+        if (messages.length === 0) {
+          emptySessionsSet.add(chatSession.id);
+        }
+      }
+      
+      setEmptySessions(emptySessionsSet);
+      setIsInitializing(false);
+      
+      // Fetch daily chat count information
+      await fetchDailyChatInfo();
+    } catch (error) {
+      console.error("Error fetching chat sessions:", error);
+      setIsInitializing(false);
     }
-  }, [session]);
+  }, [session, fetchDailyChatInfo]);
+
+  // Fetch chat sessions when the component mounts or session changes
+  useEffect(() => {
+    fetchChatSessions();
+  }, [fetchChatSessions]);
 
   const createNewChat = useCallback(async (): Promise<ChatSession | null> => {
     if (!session?.user.id) return null;
@@ -172,6 +184,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           newSet.add(newSession.id);
           return newSet;
         });
+        
+        // Update daily chat count
+        await fetchDailyChatInfo();
       }
       if (!newSession) {
         setIsNewChatSession(false);
@@ -184,7 +199,7 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
     } finally {
       setLoading(false);
     }
-  }, [session]);
+  }, [session, fetchDailyChatInfo]);
 
   const selectChatSession = useCallback(
     async (sessionId: string) => {
@@ -481,6 +496,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
         hasReachedLimit,
         questionLimit,
         hasEmptySessions,
+        dailyChatCount,
+        dailyChatLimit,
+        hasReachedDailyChatLimit,
         fetchChatSessions,
         createNewChat,
         selectChatSession,
