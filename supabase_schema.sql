@@ -130,25 +130,3 @@ USING (auth.uid() = user_id);
 
 -- Create index for better performance
 CREATE INDEX IF NOT EXISTS idx_user_subscriptions_user_id ON user_subscriptions(user_id);
-
--- Add a function to delete a user and all their data
--- This is used by the client side to delete a user account
-CREATE OR REPLACE FUNCTION public.delete_user()
-RETURNS void
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public, auth
-AS $$
-BEGIN
-  -- Update the user's app metadata to mark them as deleted
-  UPDATE auth.users
-  SET raw_user_meta_data = 
-    COALESCE(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('status', 'deleted'),
-        updated_at = now()
-  WHERE id = auth.uid();
-END;
-$$;
-
-
--- Grant execute permission to authenticated users
-GRANT EXECUTE ON FUNCTION public.delete_user() TO authenticated;

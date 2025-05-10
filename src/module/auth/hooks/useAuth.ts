@@ -1,4 +1,3 @@
-import { USER_STATUS } from "@/config/enum";
 import { LoginFormInput, SignUpFormInput } from "@/config/types";
 import { useAuthProvider } from "@/context/auth-provider";
 import { authService } from "@/services/auth-service";
@@ -19,11 +18,6 @@ const useAuth = (reset: () => void) => {
     try {
       setLoading(true);
       const { data, error } = await authService.signInWithEmail(loginData);
-
-      // Check if the user account has been marked as deleted
-      if (data.user?.user_metadata?.status === USER_STATUS.DEACTIVE) {
-        throw new Error('Your account has been deleted. Please contact support.');
-      }
 
       if (error) {
         throw new Error(error.message);

@@ -1,7 +1,6 @@
 import { LoginFormInput, SignUpFormInput } from "@/config/types";
 import supabaseClient from "./supabase/client";
 import { Provider, Session } from "@supabase/supabase-js";
-import { USER_STATUS } from "@/config/enum";
 
 /**
  * Authentication service for managing user authentication
@@ -28,7 +27,6 @@ export const authService = {
       options: {
         data: {
           'full_name': userData.full_name,
-          status: USER_STATUS.ACTIVE,
           is_onboarding: false
         }
       },
@@ -73,10 +71,10 @@ export const authService = {
     const { data } = supabaseClient.auth.onAuthStateChange((_event, session) => {
       callback(session);
     });
-    
+
     return data.subscription;
   },
-  
+
   /**
    * Update the current user's profile data
    * @param userData Profile data to update (full_name, avatar_url)
@@ -95,13 +93,13 @@ export const authService = {
   async signInWithAuthProvider(authProvider: Provider) {
     // First check if the user exists and get their onboarding status
     const { data: sessionData } = await supabaseClient.auth.getSession();
-    
+
     // If user is already logged in, check their onboarding status
     if (sessionData.session) {
       const { data } = await supabaseClient.auth.getUser();
       const isOnboardingCompleted = data.user?.user_metadata?.is_onboarding === true;
       const redirectPath = isOnboardingCompleted ? '/dashboard' : '/onboarding';
-      
+
       return await supabaseClient.auth.signInWithOAuth({
         provider: authProvider,
         options: {
@@ -109,7 +107,7 @@ export const authService = {
         },
       });
     }
-    
+
     // Default case for new or unknown users
     return await supabaseClient.auth.signInWithOAuth({
       provider: authProvider,
@@ -120,23 +118,25 @@ export const authService = {
   },
 
   /**
-   * Soft delete the current user account
-   * This method updates the user's status to 'deleted' instead of permanently deleting the account
-   * @returns Result of the soft delete operation
+   * Delete the current user account
+   * This method uses a PostgreSQL function to handle the deletion since
+   * the client-side auth.deleteUser() is not available
+   * @returns Result of the delete operation
    */
   async deleteUser() {
     try {
-      // Call the RPC function 'delete_user' which now implements soft deletion
+      // Use a Supabase PostgreSQL function to delete the user
+      // This will call the RPC function 'delete_user' which should be created in Supabase
       const { data, error } = await supabaseClient.rpc('delete_user');
-      
+
       if (error) throw error;
-      
-      // Sign out the user after marking account as deleted
+
+      // Sign out the user after successful deletion
       await this.signOut();
-      
+
       return { data, error: null };
     } catch (error) {
-      console.error('Error soft deleting user:', error);
+      console.error('Error deleting user:', error);
       return { data: null, error };
     }
   },
