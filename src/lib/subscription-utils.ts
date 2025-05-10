@@ -8,6 +8,14 @@ export const PLAN_QUESTION_LIMITS = {
   [SUBSCRIPTION_PLAN.CUSTOM]: Infinity, // Custom plans have unlimited questions
 };
 
+// Define the number of daily chat creations allowed for each plan
+export const PLAN_DAILY_CHAT_LIMITS = {
+  [SUBSCRIPTION_PLAN.FREE]: 3,
+  [SUBSCRIPTION_PLAN.PRO_BASIC]: 5,
+  [SUBSCRIPTION_PLAN.PRO_PLUS]: 10,
+  [SUBSCRIPTION_PLAN.CUSTOM]: Infinity, // Custom plans have unlimited chat creations
+};
+
 // Define the plan in order of lowest to highest
 export const PLAN_ORDER = [
   SUBSCRIPTION_PLAN.FREE,
@@ -35,6 +43,27 @@ export const getQuestionLimit = (planName: string | undefined): number => {
   
   return PLAN_QUESTION_LIMITS[planName as SUBSCRIPTION_PLAN] || 
          PLAN_QUESTION_LIMITS[SUBSCRIPTION_PLAN.FREE];
+};
+
+// Helper function to determine if user has reached their daily chat creation limit
+export const hasReachedDailyChatLimit = (
+  planName: string | undefined,
+  chatCount: number
+): boolean => {
+  if (!planName) return true; // If no plan, assume limit is reached
+  
+  const limit = PLAN_DAILY_CHAT_LIMITS[planName as SUBSCRIPTION_PLAN] || 
+                PLAN_DAILY_CHAT_LIMITS[SUBSCRIPTION_PLAN.FREE]; // Default to FREE plan limits
+                
+  return chatCount >= limit;
+};
+
+// Get the daily chat creation limit for a specific plan
+export const getDailyChatLimit = (planName: string | undefined): number => {
+  if (!planName) return PLAN_DAILY_CHAT_LIMITS[SUBSCRIPTION_PLAN.FREE];
+  
+  return PLAN_DAILY_CHAT_LIMITS[planName as SUBSCRIPTION_PLAN] || 
+         PLAN_DAILY_CHAT_LIMITS[SUBSCRIPTION_PLAN.FREE];
 };
 
 /**

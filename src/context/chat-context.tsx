@@ -173,7 +173,9 @@ export const ChatProvider = ({ children }: { children: ReactNode }) => {
           return newSet;
         });
       }
-
+      if (!newSession) {
+        setIsNewChatSession(false);
+      }
       return newSession;
     } catch (error) {
       console.error("Error creating new chat:", error);

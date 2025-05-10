@@ -3,11 +3,26 @@ import supabaseClient from "./supabase/client";
 import { v4 as uuidv4 } from 'uuid';
 import { hasReachedQuestionLimit, getQuestionLimit } from "@/lib/subscription-utils";
 import { subscriptionService } from "./subscription-service";
+import { dailyChatLimitService } from "./daily-chat-limit-service";
 import { toast } from "sonner";
 
 export const chatService = {
   // Chat Sessions
   async createChatSession(userId: string): Promise<ChatSession | null> {
+    // Check if user has reached their daily chat creation limit
+    const { canCreate, currentCount, limit } = await dailyChatLimitService.validateChatCreation(userId);
+    
+    if (!canCreate) {
+      toast.error(`Daily chat limit reached (${currentCount}/${limit})`, {
+        description: "You've reached your daily limit for creating new chats. Please upgrade your plan or try again tomorrow.",
+        duration: 4000,
+        position: "top-center",
+        className: "!text-red-500",
+        descriptionClassName: "!text-red-400"
+      });
+      return null;
+    }
+    
     const title = `Chat ${new Date().toLocaleString()}`;
     const { data, error } = await supabaseClient
       .from('chat_sessions')
@@ -16,9 +31,15 @@ export const chatService = {
       .single();
     
     if (error) {
-      console.error("Error creating chat session:", error);
+      toast.error("Error creating chat session", {
+        description: (error as Error).message,
+        position: "top-center",
+      });
       return null;
     }
+    
+    // Increment the daily chat creation count
+    await dailyChatLimitService.incrementDailyChatCount(userId);
     
     return data;
   },
