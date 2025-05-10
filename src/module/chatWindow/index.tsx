@@ -2,7 +2,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Bot, X, Paperclip, Send, CircleStop } from "lucide-react";
-import { TypingIndicator } from "./components/typing-indicator";
 import { MarkdownRenderer } from "@/module/chatWindow/components/markdown-renderer";
 import { useChat } from "./hooks/useChat";
 import { Link, useParams } from "react-router";
@@ -142,18 +141,6 @@ const ChatWindow = () => {
             </div>
           )}
 
-          {loading && !isStreaming && (
-            <div className="flex items-start gap-2 justify-start">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback>
-                  <Bot />
-                </AvatarFallback>
-              </Avatar>
-              <div className="rounded-lg px-3 py-2 text-sm bg-muted">
-                <TypingIndicator />
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
