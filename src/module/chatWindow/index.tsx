@@ -93,7 +93,7 @@ const ChatWindow = () => {
               {messages.map((msg) => (
                 <div
                   key={msg.id}
-                  className={`flex items-start gap-2 ${
+                  className={`flex items-start gap-2 pb-3 ${
                     !msg.is_ai ? "justify-end" : "justify-start"
                   }`}
                 >
