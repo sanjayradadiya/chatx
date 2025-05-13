@@ -85,7 +85,7 @@ const useAuth = (reset: () => void) => {
       setLoading(false);
     } else {
       console.log("After sign in with auth provider ==>", data);
-      navigate('/dashboard');
+      navigate('/login');
       setLoading(false);
     }
   }, [navigate]);
