@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import supabaseClient from '@/services/supabase/client';
 import { v4 as uuidv4 } from 'uuid';
 import { authService } from '@/services/auth-service';
